@@ -1154,18 +1154,28 @@
     var scrollZone  = document.getElementById('scroll-zone');
     var heroOverlay = document.getElementById('hero-overlay');
 
-    // ── PRELOAD JPEG FRAMES (synchronous scroll scrubbing) ──────────────
+    // ── PRELOAD JPEG FRAMES → ImageBitmap (GPU-decoded, instant drawImage) ──
     var NUM_FRAMES = 244;
-    var frames = new Array(NUM_FRAMES);
+    var frames = new Array(NUM_FRAMES);   // stores ImageBitmap (or Image fallback)
     var loadedCount = 0;
     var currentProgress = 0;
+    var canBitmap = typeof createImageBitmap === 'function';
 
     for (var fi = 0; fi < NUM_FRAMES; fi++) {
       (function(i) {
         var img = new Image();
-        img.onload = function() { loadedCount++; };
         img.src = 'frames/frame' + String(i + 1).padStart(4, '0') + '.jpg';
-        frames[i] = img;
+        img.onload = function() {
+          if (canBitmap) {
+            createImageBitmap(img).then(function(bmp) {
+              frames[i] = bmp;
+              loadedCount++;
+            });
+          } else {
+            frames[i] = img;
+            loadedCount++;
+          }
+        };
       })(fi);
     }
 
@@ -1173,43 +1183,55 @@
     function resizeCanvas() {
       canvas.width  = window.innerWidth;
       canvas.height = window.innerHeight;
+      geomCache = null; // invalidate cached geometry on resize
     }
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    // Cover-scale geometry for a given image
-    function coverGeometry(img) {
-      var cw = canvas.width,  ch = canvas.height;
-      var iw = img.naturalWidth  || 1280;
-      var ih = img.naturalHeight || 720;
+    // Cached cover geometry — recalculated only when canvas size changes
+    var geomCache = null;
+    function coverGeometry() {
+      if (geomCache) return geomCache;
+      var cw = canvas.width, ch = canvas.height;
+      var iw = 1280, ih = 720;
       var ia = iw / ih, ca = cw / ch;
       var sx, sy, sw, sh;
       if (ca > ia) { sw = cw; sh = cw / ia; sx = 0;             sy = (ch - sh) / 2; }
       else          { sh = ch; sw = ch * ia; sx = (cw - sw) / 2; sy = 0; }
-      return { sx: sx, sy: sy, sw: sw, sh: sh };
+      geomCache = { sx: sx, sy: sy, sw: sw, sh: sh };
+      return geomCache;
     }
 
-    // Draw current frame with sub-frame alpha blending for smooth interpolation
+    var lastDrawnIdx = -1;
+
     function draw() {
       if (loadedCount === 0) return;
       var exactIdx = currentProgress * (NUM_FRAMES - 1);
+
+      // Skip redraw if we're on the same sub-frame position
+      if (Math.abs(exactIdx - lastDrawnIdx) < 0.0005) return;
+      lastDrawnIdx = exactIdx;
+
       var lo = Math.floor(exactIdx);
       var hi = Math.min(lo + 1, NUM_FRAMES - 1);
       var blend = exactIdx - lo;
 
-      var imgLo = frames[lo];
-      if (!imgLo.complete || !imgLo.naturalWidth) return;
+      var bmpLo = frames[lo];
+      if (!bmpLo) return;
 
-      var g = coverGeometry(imgLo);
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      var g = coverGeometry();
+
+      // 'copy' composite avoids clearRect — writes directly over existing pixels
+      ctx.globalCompositeOperation = 'copy';
       ctx.globalAlpha = 1;
-      ctx.drawImage(imgLo, g.sx, g.sy, g.sw, g.sh);
+      ctx.drawImage(bmpLo, g.sx, g.sy, g.sw, g.sh);
+      ctx.globalCompositeOperation = 'source-over';
 
-      if (blend > 0.01) {
-        var imgHi = frames[hi];
-        if (imgHi.complete && imgHi.naturalWidth) {
+      if (blend > 0.01 && hi !== lo) {
+        var bmpHi = frames[hi];
+        if (bmpHi) {
           ctx.globalAlpha = blend;
-          ctx.drawImage(imgHi, g.sx, g.sy, g.sw, g.sh);
+          ctx.drawImage(bmpHi, g.sx, g.sy, g.sw, g.sh);
           ctx.globalAlpha = 1;
         }
       }
