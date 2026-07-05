@@ -116,7 +116,7 @@
       align-items: center;
       gap: 8px;
       pointer-events: none;
-      will-change: opacity;
+      /* No will-change — avoids compositor layer conflict with child animation */
     }
 
     #scroll-hint span {
@@ -131,14 +131,13 @@
       width: 2px;
       height: 60px;
       background: linear-gradient(to bottom, var(--orange), transparent);
-      animation: fadeDown 1.8s ease-in-out infinite;
-      transform-origin: top center;
+      /* Opacity-only pulse — no transform, so no compositor layer promotion */
+      animation: scrollPulse 1.8s ease-in-out infinite;
     }
 
-    @keyframes fadeDown {
-      0%       { opacity: 0; transform: scaleY(0); }
-      30%, 65% { opacity: 1; transform: scaleY(1); }
-      100%     { opacity: 0; transform: scaleY(1); }
+    @keyframes scrollPulse {
+      0%, 100% { opacity: 0.3; }
+      50%       { opacity: 1;   }
     }
 
     /* Overlay service cards */
@@ -1361,15 +1360,7 @@
       // Scale from 1→0.93 as title exits — "receding into the video" depth feel
       var sc = 0.93 + tp * 0.07;
       heroTitle.style.transform = 'translate(-50%, calc(-50% + ' + ((1 - tp) * -32) + 'px)) scale(' + sc + ')';
-      var shOpacity = clamp(1 - progress / 0.06, 0, 1);
-      scrollHint.style.opacity = shOpacity;
-      // Stop child animation the moment scrolling begins — prevents the looping
-      // fadeDown opacity conflicting with the parent JS fade and causing flicker
-      if (progress > 0.002 && !scrollHint._animStopped) {
-        scrollHint._animStopped = true;
-        var line = scrollHint.querySelector('.scroll-line');
-        if (line) { line.style.animation = 'none'; line.style.opacity = '1'; }
-      }
+      scrollHint.style.opacity = clamp(1 - progress / 0.06, 0, 1);
 
       var newCard = -1;
       for (var i = 0; i < cardSegments.length; i++) {
