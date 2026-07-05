@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gino Construction LTD — Trusted Builders in Greenwich</title>
+  <meta name="description" content="Extensions, renovations, loft conversions, kitchen & bathroom fitting, electrical, plumbing and landscaping across Greenwich and South East London. Trusted since 2017.">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --orange: #f97116;
+      --white: #ffffff;
+      --dark: #212629;
+      --card-bg: rgba(21,25,28,0.88);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--dark);
+      color: var(--white);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── CANVAS (fixed, full-screen, behind everything) ── */
+    #hero-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0;
+      display: block;
+    }
+
+    /* ── HERO OVERLAY (fixed, above canvas, pointer-events off by default) ── */
+    #hero-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    /* Corner cover to hide AI watermark baked into video frames */
+    .wm-cover {
+      position: absolute;
+      bottom: 0; right: 0;
+      width: 320px; height: 90px;
+      background: linear-gradient(to top left, #141b1f 0%, #141b1f 30%, rgba(20,27,31,0.7) 55%, transparent 75%);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* Dark gradient so text is always legible over video */
+    .overlay-gradient {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(33,38,41,0.50) 0%,
+        rgba(33,38,41,0.08) 30%,
+        rgba(33,38,41,0.08) 65%,
+        rgba(33,38,41,0.60) 100%
+      );
+      pointer-events: none;
+    }
+
+    /* Centre title — fades out as user starts scrolling */
+    #hero-title {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      pointer-events: none;
+      will-change: opacity, transform;
+    }
+
+    #hero-title h1 {
+      font-size: clamp(32px, 5vw, 64px);
+      font-weight: 800;
+      line-height: 1.1;
+      color: var(--white);
+      text-shadow: 0 2px 24px rgba(0,0,0,0.55);
+    }
+
+    #hero-title h1 em {
+      font-style: normal;
+      color: var(--orange);
+    }
+
+    #hero-title p {
+      margin-top: 14px;
+      font-size: clamp(14px, 1.8vw, 18px);
+      color: rgba(255,255,255,0.8);
+      text-shadow: 0 1px 8px rgba(0,0,0,0.5);
+    }
+
+    /* Scroll hint */
+    #scroll-hint {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      pointer-events: none;
+      will-change: opacity;
+    }
+
+    #scroll-hint span {
+      font-size: 13px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.7);
+      font-weight: 500;
+    }
+
+    .scroll-line {
+      width: 2px;
+      height: 60px;
+      background: linear-gradient(to bottom, var(--orange), transparent);
+      animation: fadeDown 1.8s ease-in-out infinite;
+      transform-origin: top center;
+    }
+
+    @keyframes fadeDown {
+      0%       { opacity: 0; transform: scaleY(0); }
+      30%, 65% { opacity: 1; transform: scaleY(1); }
+      100%     { opacity: 0; transform: scaleY(1); }
+    }
+
+    /* Overlay service cards */
+    .overlay-card {
+      position: absolute;
+      bottom: 80px;
+      left: 40px;
+      max-width: 420px;
+      background: var(--card-bg);
+      border-left: 3px solid var(--orange);
+      border-radius: 4px;
+      padding: 24px 28px;
+      opacity: 0;
+      transform: translateY(14px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      backdrop-filter: blur(12px);
+      pointer-events: none;
+      will-change: opacity, transform;
+    }
+
+    .overlay-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .overlay-card .card-tag {
+      font-size: 10px;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--orange);
+      font-weight: 700;
+      margin-bottom: 7px;
+    }
+
+    .overlay-card h2 {
+      font-size: 21px;
+      font-weight: 800;
+      color: var(--white);
+      line-height: 1.2;
+      margin-bottom: 9px;
+    }
+
+    .overlay-card p {
+      font-size: 13.5px;
+      line-height: 1.65;
+      color: rgba(255,255,255,0.75);
+      margin-bottom: 12px;
+    }
+    .overlay-card ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5px 12px;
+    }
+    .overlay-card ul li {
+      font-size: 12px;
+      color: rgba(255,255,255,0.6);
+      line-height: 1.4;
+      padding-left: 13px;
+      position: relative;
+    }
+    .overlay-card ul li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 6px;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--orange);
+    }
+    .overlay-card p:last-child {
+      margin-bottom: 0;
+    }
+
+    /* Progress bar */
+    .video-progress {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: rgba(255,255,255,0.10);
+    }
+
+    .video-progress-fill {
+      height: 100%;
+      background: var(--orange);
+      width: 0%;
+    }
+
+    /* ── SCROLL ZONE (empty — provides scroll distance for canvas animation) ── */
+    #scroll-zone {
+      height: 400vh;
+      position: relative;
+      z-index: 0;
+    }
+
+    /* ── NAV ── */
+    header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      height: 60px;
+      background: rgba(33,38,41,0.0);
+      backdrop-filter: blur(0px);
+      border-bottom: 1px solid transparent;
+      transition: background 0.35s, border-color 0.35s, backdrop-filter 0.35s;
+    }
+
+    header.scrolled {
+      background: rgba(33,38,41,0.92);
+      backdrop-filter: blur(10px);
+      border-bottom-color: rgba(249,113,22,0.15);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .nav-logo-mark {
+      width: 34px; height: 34px;
+      background: var(--orange);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 15px; color: var(--white);
+      clip-path: polygon(0 0, 100% 0, 100% 75%, 50% 100%, 0 75%);
+      flex-shrink: 0;
+    }
+
+    .nav-logo-text {
+      font-size: 13.5px; font-weight: 700; color: var(--white); line-height: 1.2;
+    }
+    .nav-logo-text span { color: var(--orange); display: block; font-weight: 400; font-size: 10.5px; }
+
+    nav { display: flex; gap: 26px; align-items: center; }
+
+    nav a {
+      color: rgba(255,255,255,0.72);
+      text-decoration: none; font-size: 13.5px; font-weight: 500;
+      transition: color 0.2s;
+    }
+    nav a:hover { color: var(--orange); }
+
+    .nav-cta {
+      background: var(--orange); color: var(--white) !important;
+      padding: 7px 16px; border-radius: 4px;
+      font-weight: 600 !important; font-size: 13px !important;
+    }
+    .nav-cta:hover { background: #e06010; }
+
+    .hamburger {
+      display: none; flex-direction: column; gap: 5px;
+      cursor: pointer; background: none; border: none; padding: 4px;
+    }
+    .hamburger span { display: block; width: 22px; height: 2px; background: var(--white); border-radius: 2px; transition: 0.3s; }
+
+    /* ── PAGE SECTIONS (positioned above canvas, must have background) ── */
+    .page-section {
+      position: relative;
+      z-index: 20;
+    }
+
+    /* ── INTRO ── */
+    .intro {
+      background: var(--dark);
+      padding: 100px 40px;
+      text-align: center;
+    }
+
+    .intro-inner { max-width: 800px; margin: 0 auto; }
+
+    .section-tag {
+      display: inline-block;
+      font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase;
+      color: var(--orange); font-weight: 700; margin-bottom: 14px;
+    }
+
+    .intro h2 {
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 800; line-height: 1.15; margin-bottom: 18px;
+    }
+
+    .intro p {
+      font-size: 16.5px; line-height: 1.72;
+      color: rgba(255,255,255,0.68); max-width: 600px;
+      margin: 0 auto 48px;
+    }
+
+    .stats-row {
+      display: flex; justify-content: center; gap: 56px; flex-wrap: wrap;
+    }
+
+    .stat { text-align: center; }
+
+    .stat-number { font-size: 40px; font-weight: 900; color: var(--orange); line-height: 1; }
+    .stat-label { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 4px; letter-spacing: 0.5px; }
+
+    /* ── ABOUT STRIP ── */
+    .about-strip {
+      background: rgba(249,113,22,0.07);
+      border-top: 1px solid rgba(249,113,22,0.13);
+      border-bottom: 1px solid rgba(249,113,22,0.13);
+      padding: 60px 40px;
+    }
+
+    .about-strip-inner {
+      max-width: 900px; margin: 0 auto;
+      display: flex; gap: 52px; align-items: center;
+    }
+
+    .about-avatar {
+      flex-shrink: 0; width: 140px; height: 180px;
+      object-fit: cover; object-position: center top;
+      border-radius: 10px;
+      border: 2px solid rgba(249,113,22,0.35);
+    }
+
+    .about-text h3 { font-size: 20px; font-weight: 800; margin-bottom: 9px; }
+    .about-text p { font-size: 14.5px; line-height: 1.7; color: rgba(255,255,255,0.68); }
+
+    .about-pills { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px; }
+
+    .pill {
+      font-size: 11.5px;
+      background: rgba(249,113,22,0.12);
+      border: 1px solid rgba(249,113,22,0.28);
+      color: var(--orange);
+      padding: 4px 11px; border-radius: 20px; font-weight: 600;
+    }
+
+    /* ── SERVICES ── */
+    .services {
+      padding: 96px 40px;
+      background: #1a1e21;
+    }
+
+    .services-inner { max-width: 1100px; margin: 0 auto; }
+
+    .services-header { text-align: center; margin-bottom: 56px; }
+    .services-header h2 { font-size: clamp(28px, 4vw, 40px); font-weight: 800; }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    @media (max-width: 900px) {
+      .services-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 500px) {
+      .services-grid { grid-template-columns: 1fr; }
+    }
+
+    .service-card {
+      background: #1a1e21; padding: 32px 28px;
+      --gx: 50%; --gy: 50%; --glow: 0;
+      position: relative; overflow: hidden;
+      transition: transform 0.55s cubic-bezier(0.23,1,0.32,1), background 0.28s, border-color 0.28s, box-shadow 0.3s;
+      will-change: transform;
+    }
+    .service-card::before {
+      content: '';
+      position: absolute; inset: 0; pointer-events: none; z-index: 0;
+      background: radial-gradient(circle at var(--gx) var(--gy), rgba(249,113,22,0.18) 0%, transparent 60%);
+      opacity: var(--glow); transition: opacity 0.4s ease;
+    }
+    .service-card > * { position: relative; z-index: 1; }
+    .service-card:hover { background: #1e2225; }
+
+    .service-icon {
+      width: 42px; height: 42px; background: rgba(249,113,22,0.11);
+      border-radius: 8px; display: flex; align-items: center; justify-content: center;
+      margin-bottom: 16px; font-size: 19px;
+    }
+
+    .service-card h3 { font-size: 17px; font-weight: 700; margin-bottom: 9px; }
+    .service-card p { font-size: 13.5px; line-height: 1.65; color: rgba(255,255,255,0.58); }
+
+    .service-link {
+      display: inline-block; margin-top: 14px;
+      font-size: 12.5px; font-weight: 600;
+      color: var(--orange); text-decoration: none;
+    }
+    .service-link:hover { text-decoration: underline; }
+
+    /* ── TESTIMONIALS ── */
+    .testimonials {
+      padding: 96px 40px;
+      background: var(--dark);
+    }
+
+    .testimonials-inner { max-width: 1100px; margin: 0 auto; }
+    .testimonials-header { text-align: center; margin-bottom: 52px; }
+    .testimonials-header h2 { font-size: clamp(28px, 4vw, 40px); font-weight: 800; }
+
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 22px;
+    }
+
+    .testimonial-card {
+      background: #1a1e21; border-radius: 8px; padding: 28px;
+      border: 1px solid rgba(255,255,255,0.05); position: relative; overflow: hidden;
+      --gx: 50%; --gy: 50%; --glow: 0;
+      transition: transform 0.55s cubic-bezier(0.23,1,0.32,1), background 0.28s, box-shadow 0.3s;
+      will-change: transform;
+    }
+    .testimonial-card::after {
+      content: '';
+      position: absolute; inset: 0; pointer-events: none; z-index: 0;
+      background: radial-gradient(circle at var(--gx) var(--gy), rgba(249,113,22,0.15) 0%, transparent 60%);
+      opacity: var(--glow); transition: opacity 0.4s ease;
+    }
+    .testimonial-card > * { position: relative; z-index: 1; }
+
+    .testimonial-card::before {
+      content: '"'; position: absolute;
+      top: 14px; right: 22px; font-size: 72px;
+      color: rgba(249,113,22,0.10); line-height: 1;
+      font-family: Georgia, serif;
+    }
+
+    .stars { color: var(--orange); font-size: 13px; margin-bottom: 13px; letter-spacing: 2px; }
+
+    .testimonial-card p {
+      font-size: 14.5px; line-height: 1.7;
+      color: rgba(255,255,255,0.75); margin-bottom: 18px;
+    }
+
+    .testimonial-author { font-size: 13px; font-weight: 700; }
+    .testimonial-author span {
+      display: block; font-weight: 400;
+      color: rgba(255,255,255,0.42); margin-top: 2px;
+    }
+
+    .google-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      margin-top: 6px; font-size: 11px; color: rgba(255,255,255,0.38);
+    }
+
+    /* ── CONTACT ── */
+    .contact {
+      padding: 96px 40px;
+      background: #1a1e21;
+    }
+
+    .contact-inner {
+      max-width: 1000px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 72px; align-items: start;
+    }
+
+    .contact-info h2 {
+      font-size: clamp(26px, 3.5vw, 38px);
+      font-weight: 800; margin-bottom: 14px;
+    }
+
+    .contact-info > p {
+      font-size: 14.5px; line-height: 1.7;
+      color: rgba(255,255,255,0.62); margin-bottom: 32px;
+    }
+
+    .contact-detail {
+      display: flex; align-items: flex-start; gap: 13px; margin-bottom: 20px;
+    }
+
+    .contact-detail-icon {
+      width: 38px; height: 38px; background: rgba(249,113,22,0.11);
+      border-radius: 8px; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; font-size: 17px;
+    }
+
+    .contact-detail-text { font-size: 13.5px; line-height: 1.5; }
+    .contact-detail-text strong {
+      display: block; font-size: 10.5px; letter-spacing: 1px;
+      text-transform: uppercase; color: rgba(255,255,255,0.42); margin-bottom: 2px;
+    }
+
+    .contact-detail-text a { color: var(--white); text-decoration: none; }
+    .contact-detail-text a:hover { color: var(--orange); }
+
+    .promise-list { list-style: none; margin-top: 28px; }
+    .promise-list li {
+      font-size: 13.5px; color: rgba(255,255,255,0.62);
+      padding: 5px 0 5px 18px; position: relative;
+    }
+    .promise-list li::before {
+      content: '✓'; position: absolute; left: 0;
+      color: var(--orange); font-weight: 700;
+    }
+
+    .contact-form {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 8px; padding: 32px;
+    }
+
+    .contact-form h3 { font-size: 19px; font-weight: 700; margin-bottom: 22px; }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .form-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+
+    .form-group label {
+      font-size: 10.5px; font-weight: 600; color: rgba(255,255,255,0.50);
+      text-transform: uppercase; letter-spacing: 0.8px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 4px; padding: 11px 13px;
+      color: var(--white); font-size: 13.5px; font-family: inherit;
+      transition: border-color 0.2s; appearance: none;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none; border-color: var(--orange);
+    }
+
+    .form-group select option { background: var(--dark); }
+    .form-group textarea { resize: vertical; min-height: 90px; }
+
+    .btn-primary {
+      display: block; width: 100%;
+      background: var(--orange); color: var(--white);
+      border: none; padding: 13px 22px;
+      font-size: 15px; font-weight: 700;
+      border-radius: 4px; cursor: pointer;
+      transition: background 0.2s; font-family: inherit;
+    }
+    .btn-primary:hover { background: #e06010; }
+    .form-note { margin-top: 9px; font-size: 11px; color: rgba(255,255,255,0.32); text-align: center; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: #141819;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      padding: 44px 40px 28px;
+    }
+
+    .footer-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: flex; justify-content: space-between;
+      align-items: flex-start; flex-wrap: wrap; gap: 28px;
+      margin-bottom: 32px;
+    }
+
+    .footer-brand p { margin-top: 9px; font-size: 12.5px; color: rgba(255,255,255,0.38); max-width: 230px; }
+
+    .footer-links h4 {
+      font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+      color: rgba(255,255,255,0.38); margin-bottom: 12px;
+    }
+
+    .footer-links a {
+      display: block; font-size: 13px;
+      color: rgba(255,255,255,0.60); text-decoration: none;
+      margin-bottom: 7px; transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--orange); }
+
+    .footer-bottom {
+      max-width: 1100px; margin: 0 auto; padding-top: 22px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      display: flex; justify-content: space-between;
+      align-items: center; flex-wrap: wrap; gap: 10px;
+    }
+
+    .footer-bottom p { font-size: 12px; color: rgba(255,255,255,0.28); }
+
+    .footer-bottom-links { display: flex; gap: 18px; }
+    .footer-bottom-links a {
+      font-size: 12px; color: rgba(255,255,255,0.32); text-decoration: none;
+    }
+    .footer-bottom-links a:hover { color: var(--orange); }
+
+    /* ── MOBILE VIDEO HERO (replaces canvas on small screens) ── */
+    #mobile-hero {
+      display: none;
+      position: relative;
+      width: 100%;
+      height: 80vw;
+      max-height: 90vh;
+      overflow: hidden;
+      background: var(--dark);
+    }
+
+    #mobile-video {
+      width: 100%; height: 100%;
+      object-fit: cover; display: block;
+    }
+
+    #mobile-hero .overlay-gradient {
+      position: absolute; inset: 0;
+      background: linear-gradient(
+        to bottom, rgba(33,38,41,0.45) 0%, rgba(33,38,41,0.08) 40%,
+        rgba(33,38,41,0.08) 60%, rgba(33,38,41,0.65) 100%
+      );
+    }
+
+    #mobile-hero-title {
+      position: absolute; bottom: 28px; left: 24px; right: 24px;
+    }
+
+    #mobile-hero-title h1 {
+      font-size: clamp(24px, 7vw, 38px);
+      font-weight: 800; line-height: 1.15; color: var(--white);
+      text-shadow: 0 2px 16px rgba(0,0,0,0.55);
+    }
+
+    #mobile-hero-title h1 em { font-style: normal; color: var(--orange); }
+
+    #mobile-hero-title p {
+      margin-top: 8px; font-size: 13px;
+      color: rgba(255,255,255,0.75);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      /* Scroll animation on mobile — shorter zone, no separate mobile hero needed */
+      #mobile-hero { display: none; }
+      #scroll-zone { height: 300vh; }
+
+      header { padding: 0 20px; }
+      nav { display: none; }
+      nav.open {
+        display: flex; flex-direction: column;
+        position: fixed; top: 60px; left: 0; right: 0;
+        background: var(--dark); padding: 20px;
+        border-bottom: 1px solid rgba(249,113,22,0.18);
+        z-index: 99; align-items: flex-start; gap: 18px;
+      }
+      nav.open a { font-size: 16px; }
+      .hamburger { display: flex; }
+
+      /* Overlay cards: full-width strip at bottom */
+      .overlay-card {
+        left: 12px; right: 12px; bottom: 56px;
+        max-width: none;
+        padding: 14px 16px;
+      }
+      .overlay-card h2 { font-size: 16px; margin-bottom: 6px; }
+      .overlay-card p { font-size: 12px; margin-bottom: 8px; }
+      .overlay-card ul { grid-template-columns: 1fr 1fr; gap: 4px 8px; }
+      .overlay-card ul li { font-size: 11px; }
+
+      /* Hero title sizing */
+      #hero-title h1 { font-size: clamp(26px, 7vw, 40px); }
+
+      .about-strip-inner { flex-direction: column; gap: 20px; }
+      .contact-inner { grid-template-columns: 1fr; gap: 44px; }
+      .form-row { grid-template-columns: 1fr; }
+      .stats-row { gap: 28px; }
+      .intro, .services, .testimonials, .contact { padding: 68px 20px; }
+      .contact-form { padding: 22px; }
+      .about-strip { padding: 50px 20px; }
+      .footer-inner { flex-direction: column; gap: 28px; }
+      footer { padding: 44px 20px 24px; }
+    }
+
+    /* ── Orange cursor ── */
+    #cursor-dot {
+      position: fixed; top: 0; left: 0;
+      width: 9px; height: 9px;
+      background: #f97116;
+      border-radius: 50%;
+      margin: -4.5px 0 0 -4.5px;
+      pointer-events: none;
+      z-index: 99999;
+      box-shadow: 0 0 10px rgba(249,113,22,0.7);
+      transition: transform 0.04s linear;
+      display: none;
+    }
+    body.cursor-on { cursor: none; }
+    body.cursor-on #cursor-dot { display: block; }
+    @media (hover: none), (pointer: coarse) { #cursor-dot { display: none !important; } }
+  </style>
+</head>
+<body>
+<div id="cursor-dot"></div>
+
+  <!-- Fixed canvas — scroll-driven frame animation (desktop) -->
+  <canvas id="hero-canvas"></canvas>
+
+  <!-- Fixed overlay — title, cards, progress bar (desktop) -->
+  <div id="hero-overlay">
+    <div class="overlay-gradient"></div>
+    <div class="wm-cover"></div>
+
+    <div id="hero-title">
+      <h1>Trusted Builders in<br><em>Greenwich &amp; Beyond</em></h1>
+      <p>Extensions · Renovations · Loft Conversions · Kitchens · Bathrooms</p>
+    </div>
+
+    <div id="scroll-hint">
+      <span>Scroll to explore</span>
+      <div class="scroll-line"></div>
+    </div>
+
+    <!-- Service overlay cards -->
+    <div id="card-1" class="overlay-card">
+      <div class="card-tag">Extensions &amp; New Builds</div>
+      <h2>Transform Your Living Space</h2>
+      <p>Custom home extensions and new builds designed to your exact specifications — from single-storey rear additions to full wraparound projects. We handle planning permission, structural engineering, and every stage of the build.</p>
+      <ul>
+        <li>Single &amp; double storey extensions</li>
+        <li>Side return extensions</li>
+        <li>Wraparound extensions</li>
+        <li>New build residential projects</li>
+        <li>Planning permission support</li>
+        <li>Structural engineering</li>
+      </ul>
+    </div>
+
+    <div id="card-2" class="overlay-card">
+      <div class="card-tag">Kitchen Fitting</div>
+      <h2>Beautiful, Functional Kitchens</h2>
+      <p>Contemporary to classic — fully installed kitchens that look stunning and work perfectly. Every worktop, cabinet, island, and appliance fitted to the highest standard, on time and on budget.</p>
+      <ul>
+        <li>Full kitchen installation</li>
+        <li>Bespoke cabinetry</li>
+        <li>Worktop fitting</li>
+        <li>Appliance installation</li>
+        <li>Kitchen islands</li>
+        <li>Lighting design</li>
+      </ul>
+    </div>
+
+    <div id="card-3" class="overlay-card">
+      <div class="card-tag">Bathroom Fitting</div>
+      <h2>Luxury Bathroom Installations</h2>
+      <p>From wet rooms to freestanding baths — quality fixtures, expert tiling, and spotless finishes that turn dated bathrooms into spaces you'll genuinely love. Underfloor heating included as standard on request.</p>
+      <ul>
+        <li>Full bathroom installation</li>
+        <li>Wet room design &amp; build</li>
+        <li>Wall &amp; floor tiling</li>
+        <li>Underfloor heating</li>
+        <li>Walk-in showers</li>
+        <li>Freestanding bath installation</li>
+      </ul>
+    </div>
+
+    <div id="card-4" class="overlay-card">
+      <div class="card-tag">Electrical · Plumbing · Landscaping</div>
+      <h2>Full-Trade Project Delivery</h2>
+      <p>All trades under one roof. Certified electricians, experienced plumbers, and skilled landscapers working in coordination — one team, one point of contact, and zero hassle from start to finish.</p>
+      <ul>
+        <li>Full rewiring &amp; consumer units</li>
+        <li>Boiler installation &amp; repair</li>
+        <li>Central heating systems</li>
+        <li>Underfloor heating</li>
+        <li>Garden design &amp; patios</li>
+        <li>Driveways, decking &amp; fencing</li>
+      </ul>
+    </div>
+
+    <!-- Progress bar -->
+    <div class="video-progress">
+      <div class="video-progress-fill" id="progress-fill"></div>
+    </div>
+  </div>
+
+  <!-- Sticky nav -->
+  <header id="site-header">
+    <a class="nav-logo" href="#top">
+      <div class="nav-logo-mark">G</div>
+      <div class="nav-logo-text">
+        Gino Construction LTD
+        <span>Trusted Builders Since 2017</span>
+      </div>
+    </a>
+    <button class="hamburger" id="hamburger" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+    <nav id="main-nav">
+      <a href="#services">Services</a>
+      <a href="#about">About</a>
+      <a href="#testimonials">Reviews</a>
+      <a href="#contact" class="nav-cta">Free Quote</a>
+    </nav>
+  </header>
+
+  <!-- SCROLL ZONE — empty spacer that drives the canvas animation -->
+  <div id="scroll-zone" aria-hidden="true"></div>
+
+  <!-- ── MOBILE HERO (autoplay video, shown only on mobile) ── -->
+  <div id="mobile-hero" class="page-section" role="img" aria-label="Construction walkthrough video">
+    <video id="mobile-video" src="video/combined.mp4" autoplay muted loop playsinline></video>
+    <div class="overlay-gradient"></div>
+    <div id="mobile-hero-title">
+      <h1>Trusted Builders in<br><em>Greenwich &amp; Beyond</em></h1>
+      <p>Extensions · Renovations · Loft Conversions · Kitchens · Bathrooms</p>
+    </div>
+  </div>
+
+  <!-- ── INTRO ── -->
+  <section class="intro page-section" id="about">
+    <div class="intro-inner">
+      <span class="section-tag">About Us</span>
+      <h2>From Concept to Completion</h2>
+      <p>Gino Construction LTD has been delivering quality builds across Greenwich and South East London since 2017. Every project — from a single bathroom refit to a full house renovation — is handled with the same commitment to craftsmanship and honest pricing.</p>
+      <div class="stats-row">
+        <div class="stat"><div class="stat-number">200+</div><div class="stat-label">Projects Completed</div></div>
+        <div class="stat"><div class="stat-number">7+</div><div class="stat-label">Years Experience</div></div>
+        <div class="stat"><div class="stat-number">5.0</div><div class="stat-label">Google Rating</div></div>
+        <div class="stat"><div class="stat-number">100%</div><div class="stat-label">Client Satisfaction</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── ABOUT STRIP ── -->
+  <section class="about-strip page-section">
+    <div class="about-strip-inner">
+      <img class="about-avatar" src="images/gino-founder.png" alt="Gino, founder of Gino Construction LTD">
+      <div class="about-text">
+        <h3>Hi, I'm Gino — the founder</h3>
+        <p>What started as a one-man operation has grown into a trusted team of skilled tradespeople, all committed to delivering exceptional quality work across South East London. I stay directly involved in every project — you speak to me, not a call centre.</p>
+        <div class="about-pills">
+          <span class="pill">Family-Run Business</span>
+          <span class="pill">Fully Insured</span>
+          <span class="pill">Building Regs Compliant</span>
+          <span class="pill">Honest Pricing</span>
+          <span class="pill">Direct Communication</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SERVICES ── -->
+  <section class="services page-section" id="services">
+    <div class="services-inner">
+      <div class="services-header">
+        <span class="section-tag">What We Do</span>
+        <h2>Our Services</h2>
+      </div>
+      <div class="services-grid">
+
+        <div class="service-card">
+          <div class="service-icon">🏗️</div>
+          <h3>Extensions &amp; New Builds</h3>
+          <p>Rear extensions, side returns, wrap-arounds, and full new builds — designed around your needs and delivered from concept to completion.</p>
+          <a href="#contact" class="service-link">Get a quote →</a>
+        </div>
+
+        <div class="service-card">
+          <div class="service-icon">🏠</div>
+          <h3>Renovations</h3>
+          <p>Complete home renovations that breathe new life into your property. Victorian terraces, modern refurbs — on time and on budget.</p>
+          <a href="#contact" class="service-link">Get a quote →</a>
+        </div>
+
+        <div class="service-card">
+          <div class="service-icon">📐</div>
+          <h3>Loft Conversions</h3>
+          <p>Maximise your home's potential with expertly designed loft conversions. Dormer, Velux, hip-to-gable — design, planning, and build all handled.</p>
+          <a href="#contact" class="service-link">Get a quote →</a>
+        </div>
+
+        <div class="service-card">
+          <div class="service-icon">🍳</div>
+          <h3>Kitchen Fitting</h3>
+          <p>Beautiful, functional kitchens installed to perfection — cabinetry, worktops, tiling, appliances, and full plumbing.</p>
+          <a href="#contact" class="service-link">Get a quote →</a>
+        </div>
+
+        <div class="service-card">
+          <div class="service-icon">🚿</div>
+          <h3>Bathroom Fitting</h3>
+          <p>Luxury bathroom installations with quality fixtures — wet rooms, en-suites, and family bathrooms installed to the highest standard.</p>
+          <a href="#contact" class="service-link">Get a quote →</a>
+        </div>
+
+        <div class="service-card">
+          <div class="service-icon">⚡</div>
+          <h3>Electrical &amp; Plumbing</h3>
+          <p>Qualified electrical and plumbing work to support any build or standalone project — safe, certified, and fully compliant.</p>
+          <a href="#contact" class="service-link">Get a quote →</a>
+        </div>
+
+        <div class="service-card">
+          <div class="service-icon">🔥</div>
+          <h3>Heating</h3>
+          <p>Boiler installations, radiator upgrades, underfloor heating — full heating system work by Gas Safe registered engineers.</p>
+          <a href="#contact" class="service-link">Get a quote →</a>
+        </div>
+
+        <div class="service-card">
+          <div class="service-icon">🌿</div>
+          <h3>Landscaping</h3>
+          <p>Professional garden design and landscaping — patios, decking, artificial grass, raised beds — complete outdoor transformations.</p>
+          <a href="#contact" class="service-link">Get a quote →</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── TESTIMONIALS ── -->
+  <section class="testimonials page-section" id="testimonials">
+    <div class="testimonials-inner">
+      <div class="testimonials-header">
+        <span class="section-tag">Client Reviews</span>
+        <h2>What Our Clients Say</h2>
+      </div>
+      <div class="testimonials-grid">
+
+        <div class="testimonial-card">
+          <div class="stars">★★★★★</div>
+          <p>"Gino and his team transformed our cramped kitchen into a stunning open-plan space. Professional, punctual, and the quality of work exceeded all expectations."</p>
+          <div class="testimonial-author">
+            Sarah Mitchell
+            <span>Kitchen Extension · Greenwich, SE10</span>
+          </div>
+          <div class="google-badge">✓ Verified Google Review</div>
+        </div>
+
+        <div class="testimonial-card">
+          <div class="stars">★★★★★</div>
+          <p>"From start to finish, the communication was excellent. They completed our Victorian terrace renovation on time and on budget — exactly what we'd been promised."</p>
+          <div class="testimonial-author">
+            James &amp; Emma Thompson
+            <span>Full House Renovation · Plumstead, SE18</span>
+          </div>
+          <div class="google-badge">✓ Verified Google Review</div>
+        </div>
+
+        <div class="testimonial-card">
+          <div class="stars">★★★★★</div>
+          <p>"Best decision we made was hiring Gino Construction. Our loft conversion added significant value to our home — superb quality and no hassle throughout."</p>
+          <div class="testimonial-author">
+            David Williams
+            <span>Loft Conversion · Woolwich, SE18</span>
+          </div>
+          <div class="google-badge">✓ Verified Google Review</div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CONTACT ── -->
+  <section class="contact page-section" id="contact">
+    <div class="contact-inner">
+
+      <div class="contact-info">
+        <span class="section-tag">Get In Touch</span>
+        <h2>Get Your Free Quote</h2>
+        <p>Free site visit at your convenience. Detailed, fixed-price quote within 48 hours. No obligation, no hidden costs.</p>
+
+        <div class="contact-detail">
+          <div class="contact-detail-icon">📞</div>
+          <div class="contact-detail-text">
+            <strong>Phone</strong>
+            <a href="tel:07415254335">07415 254 335</a>
+          </div>
+        </div>
+
+        <div class="contact-detail">
+          <div class="contact-detail-icon">✉️</div>
+          <div class="contact-detail-text">
+            <strong>Email</strong>
+            <a href="mailto:ginoconstructionltd@mail.com">ginoconstructionltd@mail.com</a>
+          </div>
+        </div>
+
+        <div class="contact-detail">
+          <div class="contact-detail-icon">📍</div>
+          <div class="contact-detail-text">
+            <strong>Location</strong>
+            Plumstead Road, SE18 1SL<br>
+            Serving Greenwich &amp; surrounding areas
+          </div>
+        </div>
+
+        <div class="contact-detail">
+          <div class="contact-detail-icon">🕐</div>
+          <div class="contact-detail-text">
+            <strong>Hours</strong>
+            Mon – Sat: 8:00 AM – 6:00 PM
+          </div>
+        </div>
+
+        <ul class="promise-list">
+          <li>Free site visit at your convenience</li>
+          <li>Fixed-price quote within 48 hours</li>
+          <li>No obligation, no hidden costs</li>
+          <li>Direct contact with Gino — no call centres</li>
+        </ul>
+      </div>
+
+      <div class="contact-form">
+        <h3>Request a Free Quote</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="f-name">First Name</label>
+            <input type="text" id="f-name" placeholder="John" required>
+          </div>
+          <div class="form-group">
+            <label for="f-surname">Last Name</label>
+            <input type="text" id="f-surname" placeholder="Smith" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="f-email">Email Address</label>
+          <input type="email" id="f-email" placeholder="john@example.com" required>
+        </div>
+        <div class="form-group">
+          <label for="f-phone">Phone Number</label>
+          <input type="tel" id="f-phone" placeholder="07700 000 000">
+        </div>
+        <div class="form-group">
+          <label for="f-service">Service Required</label>
+          <select id="f-service">
+            <option value="">Select a service…</option>
+            <option>Extensions &amp; New Builds</option>
+            <option>Renovations</option>
+            <option>Loft Conversion</option>
+            <option>Kitchen Fitting</option>
+            <option>Bathroom Fitting</option>
+            <option>Electrical Work</option>
+            <option>Plumbing</option>
+            <option>Heating</option>
+            <option>Landscaping</option>
+            <option>Multiple / Not Sure</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="f-message">Tell Us About Your Project</label>
+          <textarea id="f-message" placeholder="Brief description of the work, rough timescales, location…"></textarea>
+        </div>
+        <button class="btn-primary" onclick="handleSubmit(event)">Send Enquiry</button>
+        <p class="form-note">We'll get back to you within 24 hours · No obligation</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer class="page-section">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div class="nav-logo">
+          <div class="nav-logo-mark">G</div>
+          <div class="nav-logo-text">
+            Gino Construction LTD
+            <span>Trusted Builders Since 2017</span>
+          </div>
+        </div>
+        <p>Serving Greenwich, Woolwich, Plumstead, Eltham and surrounding South East London areas.</p>
+      </div>
+
+      <div class="footer-links">
+        <h4>Services</h4>
+        <a href="#services">Extensions &amp; New Builds</a>
+        <a href="#services">Renovations</a>
+        <a href="#services">Loft Conversions</a>
+        <a href="#services">Kitchen Fitting</a>
+        <a href="#services">Bathroom Fitting</a>
+        <a href="#services">Electrical &amp; Plumbing</a>
+        <a href="#services">Landscaping</a>
+      </div>
+
+      <div class="footer-links">
+        <h4>Company</h4>
+        <a href="#about">About Gino</a>
+        <a href="#testimonials">Reviews</a>
+        <a href="#contact">Contact Us</a>
+      </div>
+
+      <div class="footer-links">
+        <h4>Contact</h4>
+        <a href="tel:07415254335">07415 254 335</a>
+        <a href="mailto:ginoconstructionltd@mail.com">ginoconstructionltd@mail.com</a>
+        <a>Plumstead Road, SE18 1SL</a>
+        <a>Mon–Sat 8am–6pm</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2024 Gino Construction LTD. All rights reserved. Registered in England.</p>
+      <div class="footer-bottom-links">
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+  (function () {
+
+    // ── VIDEO → CANVAS (native H264 decode, no JPEG re-compression) ──
+    var canvas      = document.getElementById('hero-canvas');
+    var ctx         = canvas.getContext('2d');
+    var scrollZone  = document.getElementById('scroll-zone');
+    var heroOverlay = document.getElementById('hero-overlay');
+
+    // ── PRELOAD JPEG FRAMES (synchronous scroll scrubbing) ──────────────
+    var NUM_FRAMES = 244;
+    var frames = new Array(NUM_FRAMES);
+    var loadedCount = 0;
+    var currentProgress = 0;
+
+    for (var fi = 0; fi < NUM_FRAMES; fi++) {
+      (function(i) {
+        var img = new Image();
+        img.onload = function() { loadedCount++; };
+        img.src = 'frames/frame' + String(i + 1).padStart(4, '0') + '.jpg';
+        frames[i] = img;
+      })(fi);
+    }
+
+    // Size canvas to full viewport
+    function resizeCanvas() {
+      canvas.width  = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    // Cover-scale geometry for a given image
+    function coverGeometry(img) {
+      var cw = canvas.width,  ch = canvas.height;
+      var iw = img.naturalWidth  || 1280;
+      var ih = img.naturalHeight || 720;
+      var ia = iw / ih, ca = cw / ch;
+      var sx, sy, sw, sh;
+      if (ca > ia) { sw = cw; sh = cw / ia; sx = 0;             sy = (ch - sh) / 2; }
+      else          { sh = ch; sw = ch * ia; sx = (cw - sw) / 2; sy = 0; }
+      return { sx: sx, sy: sy, sw: sw, sh: sh };
+    }
+
+    // Draw current frame with sub-frame alpha blending for smooth interpolation
+    function draw() {
+      if (loadedCount === 0) return;
+      var exactIdx = currentProgress * (NUM_FRAMES - 1);
+      var lo = Math.floor(exactIdx);
+      var hi = Math.min(lo + 1, NUM_FRAMES - 1);
+      var blend = exactIdx - lo;
+
+      var imgLo = frames[lo];
+      if (!imgLo.complete || !imgLo.naturalWidth) return;
+
+      var g = coverGeometry(imgLo);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.globalAlpha = 1;
+      ctx.drawImage(imgLo, g.sx, g.sy, g.sw, g.sh);
+
+      if (blend > 0.01) {
+        var imgHi = frames[hi];
+        if (imgHi.complete && imgHi.naturalWidth) {
+          ctx.globalAlpha = blend;
+          ctx.drawImage(imgHi, g.sx, g.sy, g.sw, g.sh);
+          ctx.globalAlpha = 1;
+        }
+      }
+    }
+
+    // RAF loop — repaints at 60fps
+    function animate() {
+      requestAnimationFrame(animate);
+      draw();
+    }
+    animate();
+
+    // ── SCROLL → FRAME INDEX ────────────────────────────────────────
+    var cards = [
+      document.getElementById('card-1'),
+      document.getElementById('card-2'),
+      document.getElementById('card-3'),
+      document.getElementById('card-4'),
+    ];
+
+    // Clip boundaries at overall progress: 0.40 / 0.60 / 0.80
+    // Cards swap 3% BEFORE each boundary so the new card is up while transition finishes
+    var cardSegments = [
+      [0.14, 0.33],   // clip 1 — exterior (Extensions)
+      [0.34, 0.46],   // clip 2 — kitchen
+      [0.47, 0.69],   // clip 3 — bathroom
+      [0.70, 0.97],   // clip 4 — electrical / garden
+    ];
+
+    var heroTitle    = document.getElementById('hero-title');
+    var scrollHint   = document.getElementById('scroll-hint');
+    var progressFill = document.getElementById('progress-fill');
+    var activeCard   = -1;
+
+    function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
+
+    function onScroll() {
+      var scrollY    = window.scrollY || window.pageYOffset;
+      var zoneTop    = scrollZone.offsetTop;    // 0
+      var zoneH      = scrollZone.offsetHeight; // 400vh
+      var vh         = window.innerHeight;
+      var scrollable = zoneH - vh;              // 300vh
+
+      // Overall scroll progress 0→1 across the full zone
+      var progress = clamp((scrollY - zoneTop) / scrollable, 0, 1);
+
+      // Video starts at progress 0.20; canvas fades in 0.15→0.22
+      // videoProgress maps the 0.20→1.0 range to frame 0→1
+      var videoProgress = clamp((progress - 0.20) / 0.80, 0, 1);
+      currentProgress = videoProgress;
+
+      // Fade-out after scroll zone ends (both canvas and overlay)
+      var zoneEnd = zoneTop + scrollable;
+      var exitOpacity = scrollY <= zoneEnd ? 1 : Math.max(0, 1 - (scrollY - zoneEnd) / 500);
+
+      // Canvas fades in from static hero → video (progress 0.15→0.22)
+      var canvasFade = clamp((progress - 0.15) / 0.07, 0, 1);
+      canvas.style.opacity      = (canvasFade * exitOpacity).toFixed(3);
+      // Overlay stays fully on during scroll zone so title/cards are always legible
+      heroOverlay.style.opacity = exitOpacity;
+
+      // Progress bar (only tracks video portion)
+      progressFill.style.width = (videoProgress * 100) + '%';
+
+      // Hero title: hold until 0.12, fade out by 0.20
+      var tp = clamp(1 - (progress - 0.12) / 0.08, 0, 1);
+      heroTitle.style.opacity   = tp;
+      heroTitle.style.transform = 'translate(-50%, calc(-50% + ' + ((1 - tp) * -22) + 'px))';
+
+      // Scroll hint: fade out over first 10%
+      scrollHint.style.opacity = clamp(1 - progress / 0.10, 0, 1);
+
+      // Overlay cards: show the right one, hide others
+      var newCard = -1;
+      for (var i = 0; i < cardSegments.length; i++) {
+        if (progress >= cardSegments[i][0] && progress <= cardSegments[i][1]) {
+          newCard = i;
+          break;
+        }
+      }
+      if (newCard !== activeCard) {
+        for (var j = 0; j < cards.length; j++) {
+          cards[j].classList.toggle('visible', j === newCard);
+        }
+        activeCard = newCard;
+      }
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('load',   onScroll);
+    window.addEventListener('resize', onScroll);
+    onScroll(); // run once on load to set initial state
+
+    // ── NAV scroll-state ──────────────────────────────────────────
+    var siteHeader = document.getElementById('site-header');
+    function updateNav() {
+      siteHeader.classList.toggle('scrolled', window.scrollY > 40);
+    }
+    window.addEventListener('scroll', updateNav, { passive: true });
+    updateNav();
+
+    // ── HAMBURGER ──────────────────────────────────────────────────
+    var hamburger = document.getElementById('hamburger');
+    var mainNav   = document.getElementById('main-nav');
+    hamburger.addEventListener('click', function () {
+      mainNav.classList.toggle('open');
+    });
+    mainNav.querySelectorAll('a').forEach(function (a) {
+      a.addEventListener('click', function () { mainNav.classList.remove('open'); });
+    });
+
+    // ── FORM SUBMIT ────────────────────────────────────────────────
+    window.handleSubmit = function (e) {
+      e.preventDefault();
+      var btn = e.target;
+      btn.textContent = 'Message Sent ✓';
+      btn.style.background = '#2d8a4e';
+      btn.disabled = true;
+      setTimeout(function () {
+        btn.textContent = 'Send Enquiry';
+        btn.style.background = '';
+        btn.disabled = false;
+      }, 4000);
+    };
+
+  }());
+
+  // ── Orange dot cursor ─────────────────────────────────────────
+  ;(function () {
+    var fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    if (!fine) return;
+    document.body.classList.add('cursor-on');
+    var dot = document.getElementById('cursor-dot');
+    window.addEventListener('mousemove', function(e) {
+      dot.style.transform = 'translate(' + e.clientX + 'px, ' + e.clientY + 'px)';
+    });
+  })();
+
+  // ── 3D tilt on service cards ──────────────────────────────────
+  ;(function () {
+    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+    var TILT = 10;
+    document.querySelectorAll('.service-card, .testimonial-card').forEach(function(card) {
+      card.addEventListener('mousemove', function(e) {
+        var r  = card.getBoundingClientRect();
+        var dx = ((e.clientX - r.left) / r.width  - 0.5) * 2;
+        var dy = ((e.clientY - r.top)  / r.height - 0.5) * 2;
+        card.style.transition = 'transform 0.08s ease, background 0.28s, box-shadow 0.3s';
+        card.style.transform  = 'perspective(700px) rotateX(' + (-dy * TILT) + 'deg) rotateY(' + (dx * TILT) + 'deg) translateY(-4px) scale(1.015)';
+        card.style.setProperty('--gx',   ((e.clientX - r.left) / r.width  * 100).toFixed(1) + '%');
+        card.style.setProperty('--gy',   ((e.clientY - r.top)  / r.height * 100).toFixed(1) + '%');
+        card.style.setProperty('--glow', '1');
+      });
+      card.addEventListener('mouseleave', function() {
+        card.style.transition = 'transform 0.55s cubic-bezier(0.23,1,0.32,1), background 0.28s, box-shadow 0.3s';
+        card.style.transform  = '';
+        card.style.setProperty('--glow', '0');
+      });
+    });
+  })();
+
+  </script>
+</body>
+</html>
