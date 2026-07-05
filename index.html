@@ -1361,7 +1361,15 @@
       // Scale from 1→0.93 as title exits — "receding into the video" depth feel
       var sc = 0.93 + tp * 0.07;
       heroTitle.style.transform = 'translate(-50%, calc(-50% + ' + ((1 - tp) * -32) + 'px)) scale(' + sc + ')';
-      scrollHint.style.opacity  = clamp(1 - progress / 0.06, 0, 1);
+      var shOpacity = clamp(1 - progress / 0.06, 0, 1);
+      scrollHint.style.opacity = shOpacity;
+      // Stop child animation the moment scrolling begins — prevents the looping
+      // fadeDown opacity conflicting with the parent JS fade and causing flicker
+      if (progress > 0.002 && !scrollHint._animStopped) {
+        scrollHint._animStopped = true;
+        var line = scrollHint.querySelector('.scroll-line');
+        if (line) { line.style.animation = 'none'; line.style.opacity = '1'; }
+      }
 
       var newCard = -1;
       for (var i = 0; i < cardSegments.length; i++) {
