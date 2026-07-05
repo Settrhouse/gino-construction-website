@@ -1346,15 +1346,22 @@
 
       var zoneEnd = zoneTop + scrollable;
       var exitOpacity = scrollY <= zoneEnd ? 1 : Math.max(0, 1 - (scrollY - zoneEnd) / 500);
-      var canvasFade = clamp((progress - 0.15) / 0.07, 0, 1);
+
+      // ── Transition choreography (3 sequential beats): ────────────────
+      // 1) Scroll hint vanishes quickly (0 → 0.06)
+      // 2) Hero title scales + drifts out (0.06 → 0.16)
+      // 3) Canvas cross-dissolves in slowly (0.13 → 0.30) — overlaps slightly with title exit
+      var canvasFade = clamp((progress - 0.13) / 0.17, 0, 1);
       canvas.style.opacity      = (canvasFade * exitOpacity).toFixed(3);
       heroOverlay.style.opacity = exitOpacity;
       progressFill.style.width  = (currentProgress * 100) + '%';
 
-      var tp = clamp(1 - (progress - 0.12) / 0.08, 0, 1);
+      var tp = clamp(1 - (progress - 0.06) / 0.10, 0, 1);
       heroTitle.style.opacity   = tp;
-      heroTitle.style.transform = 'translate(-50%, calc(-50% + ' + ((1 - tp) * -22) + 'px))';
-      scrollHint.style.opacity  = clamp(1 - progress / 0.10, 0, 1);
+      // Scale from 1→0.93 as title exits — "receding into the video" depth feel
+      var sc = 0.93 + tp * 0.07;
+      heroTitle.style.transform = 'translate(-50%, calc(-50% + ' + ((1 - tp) * -32) + 'px)) scale(' + sc + ')';
+      scrollHint.style.opacity  = clamp(1 - progress / 0.06, 0, 1);
 
       var newCard = -1;
       for (var i = 0; i < cardSegments.length; i++) {
