@@ -106,39 +106,6 @@
     }
 
     /* Scroll hint */
-    #scroll-hint {
-      position: absolute;
-      bottom: 40px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      pointer-events: none;
-      /* No will-change — avoids compositor layer conflict with child animation */
-    }
-
-    #scroll-hint span {
-      font-size: 13px;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.7);
-      font-weight: 500;
-    }
-
-    .scroll-line {
-      width: 2px;
-      height: 60px;
-      background: linear-gradient(to bottom, var(--orange), transparent);
-      /* Opacity-only pulse — no transform, so no compositor layer promotion */
-      animation: scrollPulse 1.8s ease-in-out infinite;
-    }
-
-    @keyframes scrollPulse {
-      0%, 100% { opacity: 0.3; }
-      50%       { opacity: 1;   }
-    }
 
     /* Overlay service cards */
     .overlay-card {
@@ -803,10 +770,6 @@
       <p>Extensions · Renovations · Loft Conversions · Kitchens · Bathrooms</p>
     </div>
 
-    <div id="scroll-hint">
-      <span>Scroll to explore</span>
-      <div class="scroll-line"></div>
-    </div>
 
     <!-- Service overlay cards -->
     <div id="card-1" class="overlay-card">
@@ -1322,7 +1285,6 @@
     ];
 
     var heroTitle    = document.getElementById('hero-title');
-    var scrollHint   = document.getElementById('scroll-hint');
     var progressFill = document.getElementById('progress-fill');
     var activeCard   = -1;
 
@@ -1360,7 +1322,6 @@
       // Scale from 1→0.93 as title exits — "receding into the video" depth feel
       var sc = 0.93 + tp * 0.07;
       heroTitle.style.transform = 'translate(-50%, calc(-50% + ' + ((1 - tp) * -32) + 'px)) scale(' + sc + ')';
-      scrollHint.style.opacity = clamp(1 - progress / 0.06, 0, 1);
 
       var newCard = -1;
       for (var i = 0; i < cardSegments.length; i++) {
