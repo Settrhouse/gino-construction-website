@@ -735,10 +735,61 @@
     body.cursor-on { cursor: none; }
     body.cursor-on #cursor-dot { display: block; }
     @media (hover: none), (pointer: coarse) { #cursor-dot { display: none !important; } }
+
+    /* ── LOADING OVERLAY ── */
+    #loading-overlay {
+      position: fixed; inset: 0;
+      background: var(--dark);
+      z-index: 99999;
+      display: flex; align-items: center; justify-content: center;
+      transition: opacity 0.6s ease;
+    }
+    #loading-overlay.done { opacity: 0; pointer-events: none; }
+
+    .loading-content { text-align: center; }
+
+    .loading-logo {
+      font-size: clamp(22px, 5vw, 42px);
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      color: var(--white);
+      margin-bottom: 32px;
+    }
+    .loading-logo span { color: var(--orange); }
+
+    .loading-bar-track {
+      width: min(320px, 70vw);
+      height: 3px;
+      background: rgba(255,255,255,0.12);
+      border-radius: 3px;
+      overflow: hidden;
+      margin: 0 auto 14px;
+    }
+    #loading-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--orange);
+      border-radius: 3px;
+      transition: width 0.1s linear;
+    }
+    #loading-pct {
+      font-size: 13px;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 0.08em;
+    }
   </style>
 </head>
 <body>
 <div id="cursor-dot"></div>
+
+<!-- ── LOADING GATE — blocks scroll until all frames are GPU-decoded ── -->
+<div id="loading-overlay">
+  <div class="loading-content">
+    <div class="loading-logo">GINO<span> CONSTRUCTION</span></div>
+    <div class="loading-bar-track"><div id="loading-bar-fill"></div></div>
+    <div id="loading-pct">0%</div>
+  </div>
+</div>
 
   <!-- Fixed canvas — scroll-driven frame animation (desktop) -->
   <canvas id="hero-canvas"></canvas>
@@ -1154,16 +1205,36 @@
     var scrollZone  = document.getElementById('scroll-zone');
     var heroOverlay = document.getElementById('hero-overlay');
 
+    // ── LOADING GATE ──────────────────────────────────────────────────
+    var loadOverlay = document.getElementById('loading-overlay');
+    var loadBar     = document.getElementById('loading-bar-fill');
+    var loadPct     = document.getElementById('loading-pct');
+    document.body.style.overflow = 'hidden'; // block scroll while loading
+
     // ── PRELOAD JPEG FRAMES → ImageBitmap (GPU-decoded, instant drawImage) ──
     var isMobile = window.innerWidth <= 768;
-    var FRAME_DIR = isMobile ? 'frames-portrait/' : 'frames/';
-    var FRAME_W   = isMobile ? 720  : 1280;
-    var FRAME_H   = isMobile ? 1280 : 720;
-    var NUM_FRAMES = isMobile ? 242  : 244;
-    var frames = new Array(NUM_FRAMES);   // stores ImageBitmap (or Image fallback)
+    var FRAME_DIR  = isMobile ? 'frames-portrait/' : 'frames/';
+    var FRAME_W    = isMobile ? 720  : 1280;
+    var FRAME_H    = isMobile ? 1280 : 720;
+    var NUM_FRAMES = 484;
+    var frames     = new Array(NUM_FRAMES);
     var loadedCount = 0;
     var currentProgress = 0;
     var canBitmap = typeof createImageBitmap === 'function';
+
+    function onFrameLoaded() {
+      loadedCount++;
+      var pct = Math.round(loadedCount / NUM_FRAMES * 100);
+      loadBar.style.width = pct + '%';
+      loadPct.textContent = pct + '%';
+      if (loadedCount >= NUM_FRAMES) {
+        loadOverlay.classList.add('done');
+        setTimeout(function() {
+          loadOverlay.style.display = 'none';
+          document.body.style.overflow = '';
+        }, 650);
+      }
+    }
 
     for (var fi = 0; fi < NUM_FRAMES; fi++) {
       (function(i) {
@@ -1173,13 +1244,14 @@
           if (canBitmap) {
             createImageBitmap(img).then(function(bmp) {
               frames[i] = bmp;
-              loadedCount++;
+              onFrameLoaded();
             });
           } else {
             frames[i] = img;
-            loadedCount++;
+            onFrameLoaded();
           }
         };
+        img.onerror = onFrameLoaded; // count errors so we don't hang forever
       })(fi);
     }
 
