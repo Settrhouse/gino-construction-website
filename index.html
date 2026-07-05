@@ -35,6 +35,9 @@
       pointer-events: none;
       opacity: 0;
       display: block;
+      -webkit-transform: translateZ(0);
+      transform: translateZ(0);
+      will-change: opacity;
     }
 
     /* ── HERO OVERLAY (fixed, above canvas, pointer-events off by default) ── */
@@ -1212,13 +1215,6 @@
       }
     }
 
-    // RAF loop — repaints at 60fps
-    function animate() {
-      requestAnimationFrame(animate);
-      draw();
-    }
-    animate();
-
     // ── SCROLL → FRAME INDEX ────────────────────────────────────────
     var cards = [
       document.getElementById('card-1'),
@@ -1227,13 +1223,11 @@
       document.getElementById('card-4'),
     ];
 
-    // Clip boundaries at overall progress: 0.40 / 0.60 / 0.80
-    // Cards swap 3% BEFORE each boundary so the new card is up while transition finishes
     var cardSegments = [
-      [0.14, 0.33],   // clip 1 — exterior (Extensions)
-      [0.34, 0.46],   // clip 2 — kitchen
-      [0.47, 0.69],   // clip 3 — bathroom
-      [0.70, 0.97],   // clip 4 — electrical / garden
+      [0.14, 0.33],
+      [0.34, 0.46],
+      [0.47, 0.69],
+      [0.70, 0.97],
     ];
 
     var heroTitle    = document.getElementById('hero-title');
@@ -1243,48 +1237,55 @@
 
     function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
 
-    function onScroll() {
-      var scrollY    = window.scrollY || window.pageYOffset;
-      var zoneTop    = scrollZone.offsetTop;    // 0
-      var zoneH      = scrollZone.offsetHeight; // 400vh
-      var vh         = window.innerHeight;
-      var scrollable = zoneH - vh;              // 300vh
+    // Cache zone measurements — only re-read on resize (avoids forced layout every frame)
+    var zoneTop = 0, zoneH = 0, scrollable = 0;
+    function measureZone() {
+      zoneTop    = scrollZone.offsetTop;
+      zoneH      = scrollZone.offsetHeight;
+      scrollable = zoneH - window.innerHeight;
+      resizeCanvas();
+    }
+    measureZone();
+    window.addEventListener('resize', measureZone);
 
-      // Overall scroll progress 0→1 across the full zone
+    var lastScrollY = -1;
+
+    function tick() {
+      requestAnimationFrame(tick);
+
+      var scrollY = window.scrollY || window.pageYOffset;
+
+      // Draw every frame so in-progress image loads paint immediately
+      draw();
+
+      // Only update scroll-driven state when scroll position actually changed
+      if (scrollY === lastScrollY) return;
+      lastScrollY = scrollY;
+
       var progress = clamp((scrollY - zoneTop) / scrollable, 0, 1);
 
-      // Video starts at progress 0.20; canvas fades in 0.15→0.22
-      // videoProgress maps the 0.20→1.0 range to frame 0→1
       var videoProgress = clamp((progress - 0.20) / 0.80, 0, 1);
       currentProgress = videoProgress;
 
-      // Fade-out after scroll zone ends (both canvas and overlay)
       var zoneEnd = zoneTop + scrollable;
       var exitOpacity = scrollY <= zoneEnd ? 1 : Math.max(0, 1 - (scrollY - zoneEnd) / 500);
 
-      // Canvas fades in from static hero → video (progress 0.15→0.22)
       var canvasFade = clamp((progress - 0.15) / 0.07, 0, 1);
       canvas.style.opacity      = (canvasFade * exitOpacity).toFixed(3);
-      // Overlay stays fully on during scroll zone so title/cards are always legible
       heroOverlay.style.opacity = exitOpacity;
 
-      // Progress bar (only tracks video portion)
       progressFill.style.width = (videoProgress * 100) + '%';
 
-      // Hero title: hold until 0.12, fade out by 0.20
       var tp = clamp(1 - (progress - 0.12) / 0.08, 0, 1);
       heroTitle.style.opacity   = tp;
       heroTitle.style.transform = 'translate(-50%, calc(-50% + ' + ((1 - tp) * -22) + 'px))';
 
-      // Scroll hint: fade out over first 10%
       scrollHint.style.opacity = clamp(1 - progress / 0.10, 0, 1);
 
-      // Overlay cards: show the right one, hide others
       var newCard = -1;
       for (var i = 0; i < cardSegments.length; i++) {
         if (progress >= cardSegments[i][0] && progress <= cardSegments[i][1]) {
-          newCard = i;
-          break;
+          newCard = i; break;
         }
       }
       if (newCard !== activeCard) {
@@ -1295,10 +1296,7 @@
       }
     }
 
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('load',   onScroll);
-    window.addEventListener('resize', onScroll);
-    onScroll(); // run once on load to set initial state
+    tick(); // single RAF loop handles both drawing and scroll state
 
     // ── NAV scroll-state ──────────────────────────────────────────
     var siteHeader = document.getElementById('site-header');
@@ -1306,6 +1304,7 @@
       siteHeader.classList.toggle('scrolled', window.scrollY > 40);
     }
     window.addEventListener('scroll', updateNav, { passive: true });
+    window.addEventListener('scroll', function() { lastScrollY = -1; }, { passive: true }); // wake tick on scroll
     updateNav();
 
     // ── HAMBURGER ──────────────────────────────────────────────────
