@@ -1213,17 +1213,16 @@
 
     // ── FRAME SETTINGS ────────────────────────────────────────────────
     var isMobile  = window.innerWidth <= 768;
-    var FRAME_DIR = isMobile ? 'frames-portrait/' : 'frames/';
-    var FRAME_W   = isMobile ? 720  : 1280;
-    var FRAME_H   = isMobile ? 1280 : 720;
-    var NUM_FRAMES = 484;
+    // Mobile: 360×640 @ 12fps = 242 frames × 0.9MB uncompressed = ~218MB GPU — fits in cache → no evictions
+    // Desktop: 1280×720 @ 24fps = 484 frames, createImageBitmap pre-decoded
+    var FRAME_DIR  = isMobile ? 'frames-portrait/' : 'frames/';
+    var FRAME_W    = isMobile ? 360  : 1280;
+    var FRAME_H    = isMobile ? 640  : 720;
+    var NUM_FRAMES = isMobile ? 242  : 484;
     var frames     = new Array(NUM_FRAMES);
     var loadedCount = 0;
     var currentProgress = 0;
-
-    // Mobile: let the browser own the texture cache (no pre-pinning 2.35GB into GPU).
-    // Desktop: createImageBitmap for instant GPU blits.
-    var canBitmap = !isMobile && (typeof createImageBitmap === 'function');
+    var canBitmap = typeof createImageBitmap === 'function';
 
     function onFrameLoaded() {
       loadedCount++;
@@ -1291,29 +1290,20 @@
       if (Math.abs(exactIdx - lastDrawnIdx) < 0.0005) return;
       lastDrawnIdx = exactIdx;
 
-      var g = coverGeometry();
+      var lo = Math.floor(exactIdx);
+      var hi = Math.min(lo + 1, NUM_FRAMES - 1);
+      var blend = exactIdx - lo;
+      var bmpLo = frames[lo];
+      if (!bmpLo) return;
 
-      if (isMobile) {
-        // Mobile fast path: single frame, no blending (one drawImage per tick)
-        var idx = Math.round(exactIdx);
-        var bmp = frames[idx];
-        if (!bmp || (bmp.complete === false)) return;
-        ctx.drawImage(bmp, g.sx, g.sy, g.sw, g.sh);
-      } else {
-        // Desktop: sub-frame blending for buttery smoothness
-        var lo = Math.floor(exactIdx);
-        var hi = Math.min(lo + 1, NUM_FRAMES - 1);
-        var blend = exactIdx - lo;
-        var bmpLo = frames[lo];
-        if (!bmpLo) return;
-        ctx.globalCompositeOperation = 'copy';
-        ctx.globalAlpha = 1;
-        ctx.drawImage(bmpLo, g.sx, g.sy, g.sw, g.sh);
-        ctx.globalCompositeOperation = 'source-over';
-        if (blend > 0.01 && hi !== lo) {
-          var bmpHi = frames[hi];
-          if (bmpHi) { ctx.globalAlpha = blend; ctx.drawImage(bmpHi, g.sx, g.sy, g.sw, g.sh); ctx.globalAlpha = 1; }
-        }
+      var g = coverGeometry();
+      ctx.globalCompositeOperation = 'copy';
+      ctx.globalAlpha = 1;
+      ctx.drawImage(bmpLo, g.sx, g.sy, g.sw, g.sh);
+      ctx.globalCompositeOperation = 'source-over';
+      if (blend > 0.01 && hi !== lo) {
+        var bmpHi = frames[hi];
+        if (bmpHi) { ctx.globalAlpha = blend; ctx.drawImage(bmpHi, g.sx, g.sy, g.sw, g.sh); ctx.globalAlpha = 1; }
       }
     }
 
@@ -1377,14 +1367,19 @@
     }
 
     if (isMobile) {
-      // ── MOBILE: scroll events fire immediately (zero latency) — same approach as smooth reference sites
+      // ── MOBILE: dual-event approach for zero-lag animation
+      // touchmove fires synchronously during active finger contact (before iOS composites)
+      // scroll fires during momentum (after finger lifts) — together they cover both phases
+      document.addEventListener('touchmove', function() {
+        updateScrollState(window.scrollY || window.pageYOffset);
+      }, { passive: true });
       window.addEventListener('scroll', function() {
         updateScrollState(window.scrollY || window.pageYOffset);
       }, { passive: true });
-      // Separate RAF loop only for drawing — never blocks scroll thread
+      // RAF loop only for drawing — never blocks scroll/touch thread
       function drawLoop() { requestAnimationFrame(drawLoop); draw(); }
       drawLoop();
-      updateScrollState(window.scrollY || window.pageYOffset); // initial state
+      updateScrollState(window.scrollY || window.pageYOffset);
     } else {
       // ── DESKTOP: RAF polling (already smooth on desktop)
       var lastScrollY = -1;
