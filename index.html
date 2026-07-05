@@ -1155,7 +1155,11 @@
     var heroOverlay = document.getElementById('hero-overlay');
 
     // ── PRELOAD JPEG FRAMES → ImageBitmap (GPU-decoded, instant drawImage) ──
-    var NUM_FRAMES = 244;
+    var isMobile = window.innerWidth <= 768;
+    var FRAME_DIR = isMobile ? 'frames-mobile/' : 'frames/';
+    var FRAME_W   = isMobile ? 640  : 1280;
+    var FRAME_H   = isMobile ? 360  : 720;
+    var NUM_FRAMES = isMobile ? 242  : 244;
     var frames = new Array(NUM_FRAMES);   // stores ImageBitmap (or Image fallback)
     var loadedCount = 0;
     var currentProgress = 0;
@@ -1164,7 +1168,7 @@
     for (var fi = 0; fi < NUM_FRAMES; fi++) {
       (function(i) {
         var img = new Image();
-        img.src = 'frames/frame' + String(i + 1).padStart(4, '0') + '.jpg';
+        img.src = FRAME_DIR + 'frame' + String(i + 1).padStart(4, '0') + '.jpg';
         img.onload = function() {
           if (canBitmap) {
             createImageBitmap(img).then(function(bmp) {
@@ -1193,7 +1197,7 @@
     function coverGeometry() {
       if (geomCache) return geomCache;
       var cw = canvas.width, ch = canvas.height;
-      var iw = 1280, ih = 720;
+      var iw = FRAME_W, ih = FRAME_H;
       var ia = iw / ih, ca = cw / ch;
       var sx, sy, sw, sh;
       if (ca > ia) { sw = cw; sh = cw / ia; sx = 0;             sy = (ch - sh) / 2; }
