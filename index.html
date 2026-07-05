@@ -1211,16 +1211,19 @@
     var loadPct     = document.getElementById('loading-pct');
     document.body.style.overflow = 'hidden'; // block scroll while loading
 
-    // ── PRELOAD JPEG FRAMES → ImageBitmap (GPU-decoded, instant drawImage) ──
-    var isMobile = window.innerWidth <= 768;
-    var FRAME_DIR  = isMobile ? 'frames-portrait/' : 'frames/';
-    var FRAME_W    = isMobile ? 720  : 1280;
-    var FRAME_H    = isMobile ? 1280 : 720;
+    // ── FRAME SETTINGS ────────────────────────────────────────────────
+    var isMobile  = window.innerWidth <= 768;
+    var FRAME_DIR = isMobile ? 'frames-portrait/' : 'frames/';
+    var FRAME_W   = isMobile ? 720  : 1280;
+    var FRAME_H   = isMobile ? 1280 : 720;
     var NUM_FRAMES = 484;
     var frames     = new Array(NUM_FRAMES);
     var loadedCount = 0;
     var currentProgress = 0;
-    var canBitmap = typeof createImageBitmap === 'function';
+
+    // Mobile: let the browser own the texture cache (no pre-pinning 2.35GB into GPU).
+    // Desktop: createImageBitmap for instant GPU blits.
+    var canBitmap = !isMobile && (typeof createImageBitmap === 'function');
 
     function onFrameLoaded() {
       loadedCount++;
@@ -1242,21 +1245,20 @@
         img.src = FRAME_DIR + 'frame' + String(i + 1).padStart(4, '0') + '.jpg';
         img.onload = function() {
           if (canBitmap) {
-            createImageBitmap(img).then(function(bmp) {
-              frames[i] = bmp;
-              onFrameLoaded();
-            });
+            createImageBitmap(img).then(function(bmp) { frames[i] = bmp; onFrameLoaded(); });
           } else {
             frames[i] = img;
             onFrameLoaded();
           }
         };
-        img.onerror = onFrameLoaded; // count errors so we don't hang forever
+        img.onerror = onFrameLoaded;
       })(fi);
     }
 
-    // Size canvas to full viewport — DPR-aware so it's crisp on retina displays
-    var _dpr = Math.min(window.devicePixelRatio || 1, 2);
+    // Canvas sizing:
+    //   Desktop — DPR 2x for crisp retina
+    //   Mobile  — plain CSS px (1x); smaller canvas = 4x faster drawImage, matching Funeral/Settrhouse approach
+    var _dpr = isMobile ? 1 : Math.min(window.devicePixelRatio || 1, 2);
     function resizeCanvas() {
       canvas.width  = window.innerWidth  * _dpr;
       canvas.height = window.innerHeight * _dpr;
@@ -1284,34 +1286,33 @@
     var lastDrawnIdx = -1;
 
     function draw() {
-      if (loadedCount === 0) return;
+      if (loadedCount < NUM_FRAMES) return;
       var exactIdx = currentProgress * (NUM_FRAMES - 1);
-
-      // Skip redraw if we're on the same sub-frame position
       if (Math.abs(exactIdx - lastDrawnIdx) < 0.0005) return;
       lastDrawnIdx = exactIdx;
 
-      var lo = Math.floor(exactIdx);
-      var hi = Math.min(lo + 1, NUM_FRAMES - 1);
-      var blend = exactIdx - lo;
-
-      var bmpLo = frames[lo];
-      if (!bmpLo) return;
-
       var g = coverGeometry();
 
-      // 'copy' composite avoids clearRect — writes directly over existing pixels
-      ctx.globalCompositeOperation = 'copy';
-      ctx.globalAlpha = 1;
-      ctx.drawImage(bmpLo, g.sx, g.sy, g.sw, g.sh);
-      ctx.globalCompositeOperation = 'source-over';
-
-      if (blend > 0.01 && hi !== lo) {
-        var bmpHi = frames[hi];
-        if (bmpHi) {
-          ctx.globalAlpha = blend;
-          ctx.drawImage(bmpHi, g.sx, g.sy, g.sw, g.sh);
-          ctx.globalAlpha = 1;
+      if (isMobile) {
+        // Mobile fast path: single frame, no blending (one drawImage per tick)
+        var idx = Math.round(exactIdx);
+        var bmp = frames[idx];
+        if (!bmp || (bmp.complete === false)) return;
+        ctx.drawImage(bmp, g.sx, g.sy, g.sw, g.sh);
+      } else {
+        // Desktop: sub-frame blending for buttery smoothness
+        var lo = Math.floor(exactIdx);
+        var hi = Math.min(lo + 1, NUM_FRAMES - 1);
+        var blend = exactIdx - lo;
+        var bmpLo = frames[lo];
+        if (!bmpLo) return;
+        ctx.globalCompositeOperation = 'copy';
+        ctx.globalAlpha = 1;
+        ctx.drawImage(bmpLo, g.sx, g.sy, g.sw, g.sh);
+        ctx.globalCompositeOperation = 'source-over';
+        if (blend > 0.01 && hi !== lo) {
+          var bmpHi = frames[hi];
+          if (bmpHi) { ctx.globalAlpha = blend; ctx.drawImage(bmpHi, g.sx, g.sy, g.sw, g.sh); ctx.globalAlpha = 1; }
         }
       }
     }
@@ -1349,52 +1350,52 @@
     measureZone();
     window.addEventListener('resize', measureZone);
 
-    var lastScrollY = -1;
+    function updateScrollState(scrollY) {
+      var progress = clamp((scrollY - zoneTop) / scrollable, 0, 1);
+      currentProgress = clamp((progress - 0.20) / 0.80, 0, 1);
 
-    function tick() {
-      requestAnimationFrame(tick);
+      var zoneEnd = zoneTop + scrollable;
+      var exitOpacity = scrollY <= zoneEnd ? 1 : Math.max(0, 1 - (scrollY - zoneEnd) / 500);
+      var canvasFade = clamp((progress - 0.15) / 0.07, 0, 1);
+      canvas.style.opacity      = (canvasFade * exitOpacity).toFixed(3);
+      heroOverlay.style.opacity = exitOpacity;
+      progressFill.style.width  = (currentProgress * 100) + '%';
 
-      var scrollY = window.scrollY || window.pageYOffset;
+      var tp = clamp(1 - (progress - 0.12) / 0.08, 0, 1);
+      heroTitle.style.opacity   = tp;
+      heroTitle.style.transform = 'translate(-50%, calc(-50% + ' + ((1 - tp) * -22) + 'px))';
+      scrollHint.style.opacity  = clamp(1 - progress / 0.10, 0, 1);
 
-      // Update progress BEFORE draw so each frame renders at current scroll position
-      if (scrollY !== lastScrollY) {
-        lastScrollY = scrollY;
-        var progress = clamp((scrollY - zoneTop) / scrollable, 0, 1);
-        currentProgress = clamp((progress - 0.20) / 0.80, 0, 1);
-
-        var zoneEnd = zoneTop + scrollable;
-        var exitOpacity = scrollY <= zoneEnd ? 1 : Math.max(0, 1 - (scrollY - zoneEnd) / 500);
-
-        var canvasFade = clamp((progress - 0.15) / 0.07, 0, 1);
-        canvas.style.opacity      = (canvasFade * exitOpacity).toFixed(3);
-        heroOverlay.style.opacity = exitOpacity;
-
-        progressFill.style.width = (currentProgress * 100) + '%';
-
-        var tp = clamp(1 - (progress - 0.12) / 0.08, 0, 1);
-        heroTitle.style.opacity   = tp;
-        heroTitle.style.transform = 'translate(-50%, calc(-50% + ' + ((1 - tp) * -22) + 'px))';
-
-        scrollHint.style.opacity = clamp(1 - progress / 0.10, 0, 1);
-
-        var newCard = -1;
-        for (var i = 0; i < cardSegments.length; i++) {
-          if (progress >= cardSegments[i][0] && progress <= cardSegments[i][1]) {
-            newCard = i; break;
-          }
-        }
-        if (newCard !== activeCard) {
-          for (var j = 0; j < cards.length; j++) {
-            cards[j].classList.toggle('visible', j === newCard);
-          }
-          activeCard = newCard;
-        }
+      var newCard = -1;
+      for (var i = 0; i < cardSegments.length; i++) {
+        if (progress >= cardSegments[i][0] && progress <= cardSegments[i][1]) { newCard = i; break; }
       }
-
-      draw();
+      if (newCard !== activeCard) {
+        for (var j = 0; j < cards.length; j++) cards[j].classList.toggle('visible', j === newCard);
+        activeCard = newCard;
+      }
     }
 
-    tick(); // single RAF loop handles both drawing and scroll state
+    if (isMobile) {
+      // ── MOBILE: scroll events fire immediately (zero latency) — same approach as smooth reference sites
+      window.addEventListener('scroll', function() {
+        updateScrollState(window.scrollY || window.pageYOffset);
+      }, { passive: true });
+      // Separate RAF loop only for drawing — never blocks scroll thread
+      function drawLoop() { requestAnimationFrame(drawLoop); draw(); }
+      drawLoop();
+      updateScrollState(window.scrollY || window.pageYOffset); // initial state
+    } else {
+      // ── DESKTOP: RAF polling (already smooth on desktop)
+      var lastScrollY = -1;
+      function tick() {
+        requestAnimationFrame(tick);
+        var scrollY = window.scrollY || window.pageYOffset;
+        if (scrollY !== lastScrollY) { lastScrollY = scrollY; updateScrollState(scrollY); }
+        draw();
+      }
+      tick();
+    }
 
     // ── NAV scroll-state ──────────────────────────────────────────
     var siteHeader = document.getElementById('site-header');
@@ -1402,7 +1403,6 @@
       siteHeader.classList.toggle('scrolled', window.scrollY > 40);
     }
     window.addEventListener('scroll', updateNav, { passive: true });
-    window.addEventListener('scroll', function() { lastScrollY = -1; }, { passive: true }); // wake tick on scroll
     updateNav();
 
     // ── HAMBURGER ──────────────────────────────────────────────────
