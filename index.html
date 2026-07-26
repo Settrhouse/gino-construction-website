@@ -78,9 +78,9 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --orange: #f97116;
+      --orange: #f0641e;
       --white: #ffffff;
-      --dark: #212629;
+      --dark: #1c1a17;
     }
     html { scroll-behavior: smooth; }
     body {
@@ -109,13 +109,13 @@
       position: fixed; top: 42px; left: 0; right: 0; z-index: 300;
       display: flex; align-items: center; justify-content: space-between;
       padding: 0 40px; height: 66px;
-      background: rgba(33,38,41,0); backdrop-filter: blur(0px);
+      background: rgba(28,26,23,0); backdrop-filter: blur(0px);
       border-bottom: 1px solid transparent;
       transition: background 0.35s, border-color 0.35s, backdrop-filter 0.35s;
     }
     header.scrolled {
-      background: rgba(33,38,41,0.95); backdrop-filter: blur(14px);
-      border-bottom-color: rgba(249,113,22,0.15);
+      background: rgba(28,26,23,0.95); backdrop-filter: blur(14px);
+      border-bottom-color: rgba(240,100,30,0.15);
     }
     .nav-logo { display: flex; align-items: center; text-decoration: none; }
     .nav-logo-img {
@@ -129,7 +129,7 @@
       background: var(--orange); color: var(--white) !important;
       padding: 10px 22px; border-radius: 5px; font-weight: 700 !important; font-size: 15px !important;
     }
-    .nav-cta:hover { background: #e06010 !important; }
+    .nav-cta:hover { background: #d45518 !important; }
     .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: none; border: none; padding: 4px; }
     .hamburger span { display: block; width: 24px; height: 2px; background: var(--white); border-radius: 2px; }
 
@@ -145,15 +145,15 @@
       width: 12px; height: 12px; border-radius: 50%;
       background: var(--orange);
       margin: -6px 0 0 -6px;
-      box-shadow: 0 0 14px rgba(249,113,22,0.85);
+      box-shadow: 0 0 14px rgba(240,100,30,0.85);
       transition: width 0.22s ease, height 0.22s ease, margin 0.22s ease,
                   background 0.22s ease, box-shadow 0.22s ease;
     }
     #cursor-dot.hovered {
       width: 54px; height: 54px;
       margin: -27px 0 0 -27px;
-      background: rgba(249,113,22,0.08);
-      box-shadow: 0 0 0 1.5px var(--orange), 0 0 26px rgba(249,113,22,0.45);
+      background: rgba(240,100,30,0.08);
+      box-shadow: 0 0 0 1.5px var(--orange), 0 0 26px rgba(240,100,30,0.45);
     }
     @media (hover: none), (pointer: coarse) { #cursor-wrap { display: none !important; } }
 
@@ -171,12 +171,12 @@
       font-size: 16px; font-weight: 700;
       letter-spacing: 0.22em; text-transform: uppercase;
       color: rgba(255,255,255,0.90);
-      text-shadow: 0 0 14px rgba(249,113,22,0.7);
+      text-shadow: 0 0 14px rgba(240,100,30,0.7);
     }
     #scroll-cta-arrow {
       animation: scrollBounce 1.8s ease-in-out infinite;
     }
-    #scroll-cta-arrow svg { filter: drop-shadow(0 0 8px rgba(249,113,22,0.9)); }
+    #scroll-cta-arrow svg { filter: drop-shadow(0 0 8px rgba(240,100,30,0.9)); }
     @keyframes scrollBounce {
       0%, 100% { transform: translateY(0); }
       50%       { transform: translateY(22px); }
@@ -202,8 +202,8 @@
     .hero-overlay {
       position: absolute; inset: 0; z-index: 1;
       background: linear-gradient(to bottom,
-        rgba(33,38,41,0.55) 0%, rgba(33,38,41,0.28) 45%,
-        rgba(33,38,41,0.28) 65%, rgba(33,38,41,0.78) 100%);
+        rgba(28,26,23,0.55) 0%, rgba(28,26,23,0.28) 45%,
+        rgba(28,26,23,0.28) 65%, rgba(28,26,23,0.78) 100%);
     }
     .hero-content { position: relative; z-index: 2; padding: 0 24px; max-width: 860px; }
     .hero-content h1 {
@@ -223,7 +223,7 @@
       font-size: 18px; font-weight: 700; text-decoration: none;
       transition: background 0.2s, transform 0.15s; display: inline-block;
     }
-    .btn-hero-primary:hover { background: #e06010; transform: translateY(-2px); }
+    .btn-hero-primary:hover { background: #d45518; transform: translateY(-2px); }
     .btn-hero-secondary {
       background: rgba(255,255,255,0.12);
       border: 2px solid rgba(255,255,255,0.5); color: var(--white);
@@ -235,9 +235,9 @@
 
     /* ── REVEAL ANIMATIONS ── */
     @keyframes revealGlow {
-      0%   { filter: drop-shadow(0 0 22px rgba(249,113,22,0.6)); }
-      55%  { filter: drop-shadow(0 0 10px rgba(249,113,22,0.25)); }
-      100% { filter: drop-shadow(0 0 0px rgba(249,113,22,0)); }
+      0%   { filter: drop-shadow(0 0 22px rgba(240,100,30,0.6)); }
+      55%  { filter: drop-shadow(0 0 10px rgba(240,100,30,0.25)); }
+      100% { filter: drop-shadow(0 0 0px rgba(240,100,30,0)); }
     }
     .reveal {
       opacity: 0; transform: translateY(55px);
@@ -276,7 +276,7 @@
     }
     .stat-number {
       font-size: 42px; font-weight: 900; color: var(--orange); line-height: 1;
-      text-shadow: 0 0 18px rgba(249,113,22,0.7), 0 0 44px rgba(249,113,22,0.3);
+      text-shadow: 0 0 18px rgba(240,100,30,0.7), 0 0 44px rgba(240,100,30,0.3);
     }
     .stat.in .stat-number { animation: statFloat 3.2s ease-in-out infinite; }
     .stats-row .stat:nth-child(2).in .stat-number { animation-delay: 0.5s; }
@@ -286,20 +286,20 @@
 
     /* ── ABOUT STRIP ── */
     .about-strip {
-      background: rgba(249,113,22,0.06);
-      border-top: 1px solid rgba(249,113,22,0.13);
-      border-bottom: 1px solid rgba(249,113,22,0.13);
+      background: rgba(240,100,30,0.06);
+      border-top: 1px solid rgba(240,100,30,0.13);
+      border-bottom: 1px solid rgba(240,100,30,0.13);
       padding: 64px 40px;
     }
     .about-strip-inner { max-width: 900px; margin: 0 auto; display: flex; gap: 52px; align-items: center; }
-    .about-avatar { flex-shrink: 0; width: 140px; height: 180px; object-fit: cover; object-position: center top; border-radius: 10px; border: 2px solid rgba(249,113,22,0.35); }
+    .about-avatar { flex-shrink: 0; width: 140px; height: 180px; object-fit: cover; object-position: center top; border-radius: 10px; border: 2px solid rgba(240,100,30,0.35); }
     .about-text h3 { font-size: 22px; font-weight: 800; margin-bottom: 10px; }
     .about-text p { font-size: 16px; line-height: 1.72; color: rgba(255,255,255,0.70); }
     .about-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
-    .pill { font-size: 13px; background: rgba(249,113,22,0.12); border: 1px solid rgba(249,113,22,0.28); color: var(--orange); padding: 5px 13px; border-radius: 20px; font-weight: 600; }
+    .pill { font-size: 13px; background: rgba(240,100,30,0.12); border: 1px solid rgba(240,100,30,0.28); color: var(--orange); padding: 5px 13px; border-radius: 20px; font-weight: 600; }
 
     /* ── SERVICES ── */
-    .services { padding: 96px 40px; background: #1a1e21; }
+    .services { padding: 96px 40px; background: #151310; }
     .services-inner { max-width: 1100px; margin: 0 auto; }
     .services-header { text-align: center; margin-bottom: 52px; }
     .services-header h2 { font-size: clamp(28px, 4vw, 42px); font-weight: 800; margin-top: 8px; }
@@ -310,7 +310,7 @@
     @media (max-width: 860px) { .services-grid { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 500px) { .services-grid { grid-template-columns: 1fr; } }
     .service-card {
-      background: #1a1e21; padding: 32px 28px;
+      background: #151310; padding: 32px 28px;
       border: 1px solid rgba(255,255,255,0.07);
       border-radius: 10px;
       position: relative; overflow: hidden;
@@ -321,16 +321,16 @@
     .service-card::before {
       content: ''; position: absolute; inset: 0; border-radius: inherit;
       pointer-events: none; z-index: 0;
-      background: radial-gradient(circle at var(--gx) var(--gy), rgba(249,113,22,0.22) 0%, transparent 62%);
+      background: radial-gradient(circle at var(--gx) var(--gy), rgba(240,100,30,0.22) 0%, transparent 62%);
       opacity: var(--glow); transition: opacity 0.4s ease;
     }
     .service-card > * { position: relative; z-index: 1; }
     .service-card:hover {
-      border-color: rgba(249,113,22,0.30);
+      border-color: rgba(240,100,30,0.30);
       box-shadow: 0 18px 48px rgba(0,0,0,0.45);
-      background: #1f2428;
+      background: #1a1815;
     }
-    .service-icon { width: 46px; height: 46px; background: rgba(249,113,22,0.11); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; font-size: 22px; }
+    .service-icon { width: 46px; height: 46px; background: rgba(240,100,30,0.11); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; font-size: 22px; }
     .service-card h3 { font-size: 19px; font-weight: 700; margin-bottom: 9px; }
     .service-card p { font-size: 15px; line-height: 1.65; color: rgba(255,255,255,0.62); }
     .service-link { display: inline-block; margin-top: 14px; font-size: 14px; font-weight: 600; color: var(--orange); text-decoration: none; }
@@ -342,8 +342,8 @@
     .testimonials-header { text-align: center; margin-bottom: 52px; }
     .testimonials-header h2 { font-size: clamp(28px, 4vw, 42px); font-weight: 800; margin-top: 8px; }
     .testimonials-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 24px; }
-    .testimonial-card { background: #1a1e21; border-radius: 8px; padding: 32px; border: 1px solid rgba(255,255,255,0.06); position: relative; }
-    .testimonial-card::before { content: '"'; position: absolute; top: 14px; right: 22px; font-size: 80px; color: rgba(249,113,22,0.09); line-height: 1; font-family: Georgia, serif; }
+    .testimonial-card { background: #151310; border-radius: 8px; padding: 32px; border: 1px solid rgba(255,255,255,0.06); position: relative; }
+    .testimonial-card::before { content: '"'; position: absolute; top: 14px; right: 22px; font-size: 80px; color: rgba(240,100,30,0.09); line-height: 1; font-family: Georgia, serif; }
     .stars { color: var(--orange); font-size: 15px; margin-bottom: 14px; letter-spacing: 2px; }
     .testimonial-card p { font-size: 16px; line-height: 1.72; color: rgba(255,255,255,0.82); margin-bottom: 20px; }
     .testimonial-author { font-size: 15px; font-weight: 700; }
@@ -351,12 +351,12 @@
     .review-badge { display: inline-block; margin-top: 8px; font-size: 12px; color: rgba(255,255,255,0.38); }
 
     /* ── CONTACT ── */
-    .contact { padding: 96px 40px; background: #1a1e21; }
+    .contact { padding: 96px 40px; background: #151310; }
     .contact-inner { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 72px; align-items: start; }
     .contact-info h2 { font-size: clamp(26px, 3.5vw, 38px); font-weight: 800; margin-bottom: 14px; }
     .contact-info > p { font-size: 16px; line-height: 1.7; color: rgba(255,255,255,0.65); margin-bottom: 32px; }
     .contact-detail { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 22px; }
-    .contact-detail-icon { width: 42px; height: 42px; background: rgba(249,113,22,0.11); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 18px; }
+    .contact-detail-icon { width: 42px; height: 42px; background: rgba(240,100,30,0.11); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 18px; }
     .contact-detail-text { font-size: 16px; line-height: 1.5; }
     .contact-detail-text strong { display: block; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,0.42); margin-bottom: 3px; }
     .contact-detail-text a { color: var(--white); text-decoration: none; }
@@ -374,7 +374,7 @@
     .form-group select option { background: var(--dark); }
     .form-group textarea { resize: vertical; min-height: 100px; }
     .btn-primary { display: block; width: 100%; background: var(--orange); color: var(--white); border: none; padding: 17px 22px; font-size: 18px; font-weight: 700; border-radius: 5px; cursor: pointer; transition: background 0.2s; font-family: inherit; }
-    .btn-primary:hover { background: #e06010; }
+    .btn-primary:hover { background: #d45518; }
     .form-note { margin-top: 10px; font-size: 12px; color: rgba(255,255,255,0.32); text-align: center; }
     .contact-cta-btns { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
     .btn-call {
@@ -383,9 +383,9 @@
       padding: 18px 28px; border-radius: 6px;
       font-size: 19px; font-weight: 800; text-decoration: none;
       transition: background 0.2s, transform 0.15s;
-      box-shadow: 0 4px 24px rgba(249,113,22,0.35);
+      box-shadow: 0 4px 24px rgba(240,100,30,0.35);
     }
-    .btn-call:hover { background: #e06010; transform: translateY(-2px); }
+    .btn-call:hover { background: #d45518; transform: translateY(-2px); }
     .btn-whatsapp {
       display: flex; align-items: center; justify-content: center; gap: 10px;
       background: #25D366; color: var(--white);
@@ -404,7 +404,7 @@
     .form-divider span { font-size: 12px; color: rgba(255,255,255,0.32); white-space: nowrap; letter-spacing: 0.05em; }
 
     /* ── FOOTER ── */
-    footer { background: #141819; border-top: 1px solid rgba(255,255,255,0.05); padding: 48px 40px 28px; }
+    footer { background: #0e0d0b; border-top: 1px solid rgba(255,255,255,0.05); padding: 48px 40px 28px; }
     .footer-inner { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 32px; margin-bottom: 36px; }
     .footer-brand p { margin-top: 10px; font-size: 13px; color: rgba(255,255,255,0.38); max-width: 240px; }
     .footer-logo-img { height: 48px; width: auto; mix-blend-mode: screen; }
@@ -424,14 +424,14 @@
       color: rgba(255,255,255,0.65);
       text-decoration: none; transition: background 0.2s, border-color 0.2s, color 0.2s;
     }
-    .footer-social a:hover { background: rgba(249,113,22,0.15); border-color: rgba(249,113,22,0.4); color: var(--orange); }
+    .footer-social a:hover { background: rgba(240,100,30,0.15); border-color: rgba(240,100,30,0.4); color: var(--orange); }
     .footer-social svg { width: 18px; height: 18px; fill: currentColor; flex-shrink: 0; }
 
     /* ── RESPONSIVE ── */
     @media (max-width: 768px) {
       header { padding: 0 20px; }
       nav { display: none; }
-      nav.open { display: flex; flex-direction: column; position: fixed; top: 108px; left: 0; right: 0; background: rgba(33,38,41,0.98); padding: 24px 20px; border-bottom: 1px solid rgba(249,113,22,0.18); z-index: 99; align-items: flex-start; gap: 20px; }
+      nav.open { display: flex; flex-direction: column; position: fixed; top: 108px; left: 0; right: 0; background: rgba(28,26,23,0.98); padding: 24px 20px; border-bottom: 1px solid rgba(240,100,30,0.18); z-index: 99; align-items: flex-start; gap: 20px; }
       nav.open a { font-size: 17px; }
       .hamburger { display: flex; }
       .hero-content h1 { font-size: clamp(30px, 8vw, 48px); }
@@ -485,12 +485,12 @@
     <span id="scroll-cta-label">Scroll</span>
     <div id="scroll-cta-arrow">
       <svg width="62" height="62" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M6 9l6 6 6-6" stroke="#f97116" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M6 9l6 6 6-6" stroke="#f0641e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </div>
   </div>
   <div class="hero-content">
-    <h1>Trusted Builders in<br><em>Greenwich &amp; Beyond</em></h1>
+    <h1>You Speak to the Builder,<br><em>Not a Call Centre.</em></h1>
     <p>Extensions · Renovations · Kitchens · Bathrooms · General Maintenance</p>
     <div class="hero-btns">
       <a href="tel:07415254335" class="btn-hero-primary">📞 Call for a Free Quote</a>
@@ -503,9 +503,9 @@
 <!-- ── INTRO / ABOUT ── -->
 <section class="intro" id="about">
   <div class="intro-inner">
-    <span class="section-tag reveal">About Us</span>
-    <h2 class="reveal">From Concept to Completion</h2>
-    <p class="intro-body reveal">With over 20 years of experience, Gino Construction LTD delivers quality builds across Greenwich and South East London. Every project — from a small repair to a full house renovation — is handled with the same commitment to craftsmanship and honest pricing.</p>
+    <span class="section-tag reveal">20 Years in South East London</span>
+    <h2 class="reveal">The Work Speaks for Itself</h2>
+    <p class="intro-body reveal">Twenty years of work across South East London — and most of it comes through word of mouth. Gino built this business by being straight with people: honest quotes, no corners cut, and always a direct line to the person actually doing the job.</p>
     <div class="stats-row">
       <div class="stat reveal d1"><div class="stat-number">1,000+</div><div class="stat-label">Projects Completed</div></div>
       <div class="stat reveal d2"><div class="stat-number">20+</div><div class="stat-label">Years Experience</div></div>
@@ -537,7 +537,6 @@
 <section class="services" id="services">
   <div class="services-inner">
     <div class="services-header">
-      <span class="section-tag reveal">What We Do</span>
       <h2 class="reveal">Our Services</h2>
     </div>
     <div class="services-grid">
@@ -548,13 +547,13 @@
         <a href="#contact" class="service-link">Get a quote →</a>
       </div>
       <div class="service-card reveal d2">
-        <div class="service-icon">🏠</div>
+        <div class="service-icon">🪚</div>
         <h3>Renovations</h3>
         <p>We've renovated Victorian terraces in Woolwich, refreshed tired properties in Eltham, and everything in between. Full home renovations handled from strip-out to final coat — on time, on budget, no surprises.</p>
         <a href="#contact" class="service-link">Get a quote →</a>
       </div>
       <div class="service-card reveal d3">
-        <div class="service-icon">📐</div>
+        <div class="service-icon">🪜</div>
         <h3>Loft Conversions</h3>
         <p>Loft conversions are one of our most popular jobs across Greenwich and Blackheath, where the period housing suits them well. Dormer, Velux, hip-to-gable — we handle design, planning, and the full build.</p>
         <a href="#contact" class="service-link">Get a quote →</a>
@@ -578,7 +577,7 @@
         <a href="#contact" class="service-link">Get a quote →</a>
       </div>
       <div class="service-card reveal d1">
-        <div class="service-icon">🔥</div>
+        <div class="service-icon">🌡️</div>
         <h3>Heating</h3>
         <p>Boiler installations, radiator upgrades, underfloor heating — all by Gas Safe registered engineers across Woolwich, Greenwich, and the surrounding area. We'll always tell you straight what your system actually needs.</p>
         <a href="#contact" class="service-link">Get a quote →</a>
@@ -603,8 +602,8 @@
 <section class="testimonials" id="testimonials">
   <div class="testimonials-inner">
     <div class="testimonials-header">
-      <span class="section-tag reveal">Client Reviews</span>
-      <h2 class="reveal">What Our Clients Say</h2>
+      <span class="section-tag reveal">In Their Own Words</span>
+      <h2 class="reveal">What People Say After the Job</h2>
     </div>
     <div class="testimonials-grid">
       <div class="testimonial-card reveal d1">

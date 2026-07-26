@@ -21,7 +21,7 @@
   <meta name="twitter:image"       content="https://ginoconstructionltd.com/images/logo.png">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root { --orange: #f97116; --white: #ffffff; --dark: #212629; }
+    :root { --orange: #f0641e; --white: #ffffff; --dark: #1c1a17; }
     html { scroll-behavior: smooth; }
     body {
       font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
@@ -47,7 +47,7 @@
       display: flex; align-items: center; justify-content: space-between;
       padding: 0 40px; height: 66px;
       background: rgba(33,38,41,0.95); backdrop-filter: blur(14px);
-      border-bottom: 1px solid rgba(249,113,22,0.15);
+      border-bottom: 1px solid rgba(240,100,30,0.15);
     }
     .nav-logo { display: flex; align-items: center; text-decoration: none; }
     .nav-logo-img { height: 46px; width: auto; mix-blend-mode: screen; }
@@ -55,7 +55,7 @@
     nav a { color: rgba(255,255,255,0.82); text-decoration: none; font-size: 15px; font-weight: 500; transition: color 0.2s; }
     nav a:hover { color: var(--orange); }
     .nav-cta { background: var(--orange); color: var(--white) !important; padding: 10px 22px; border-radius: 5px; font-weight: 700 !important; font-size: 15px !important; }
-    .nav-cta:hover { background: #e06010 !important; }
+    .nav-cta:hover { background: #d45518 !important; }
     .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: none; border: none; padding: 4px; }
     .hamburger span { display: block; width: 24px; height: 2px; background: var(--white); border-radius: 2px; }
 
@@ -74,9 +74,9 @@
     }
     .gallery-nav a.primary {
       background: var(--orange); color: var(--white);
-      box-shadow: 0 4px 20px rgba(249,113,22,0.3);
+      box-shadow: 0 4px 20px rgba(240,100,30,0.3);
     }
-    .gallery-nav a.primary:hover { background: #e06010; transform: translateY(-2px); }
+    .gallery-nav a.primary:hover { background: #d45518; transform: translateY(-2px); }
     .gallery-nav a.secondary {
       background: transparent; color: var(--white);
       border: 2px solid rgba(255,255,255,0.35);
@@ -150,7 +150,7 @@
     /* ── CTA ── */
     .gallery-cta {
       text-align: center; padding: 60px 20px 80px;
-      background: rgba(249,113,22,0.06); border-top: 1px solid rgba(249,113,22,0.12);
+      background: rgba(240,100,30,0.06); border-top: 1px solid rgba(240,100,30,0.12);
     }
     .gallery-cta h2 { font-size: clamp(24px, 3.5vw, 36px); font-weight: 800; margin-bottom: 12px; }
     .gallery-cta p { font-size: 17px; color: rgba(255,255,255,0.62); margin-bottom: 30px; }
@@ -159,10 +159,10 @@
       padding: 16px 36px; border-radius: 5px; font-size: 18px; font-weight: 700;
       text-decoration: none; transition: background 0.2s, transform 0.15s;
     }
-    .gallery-cta a:hover { background: #e06010; transform: translateY(-2px); }
+    .gallery-cta a:hover { background: #d45518; transform: translateY(-2px); }
 
     /* ── FOOTER ── */
-    footer { background: #141819; border-top: 1px solid rgba(255,255,255,0.05); padding: 32px 40px; text-align: center; }
+    footer { background: #0e0d0b; border-top: 1px solid rgba(255,255,255,0.05); padding: 32px 40px; text-align: center; }
     footer p { font-size: 13px; color: rgba(255,255,255,0.28); }
     .footer-social { display: flex; gap: 14px; justify-content: center; margin-bottom: 14px; }
     .footer-social a {
@@ -171,7 +171,7 @@
       background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.10);
       color: rgba(255,255,255,0.65); text-decoration: none; transition: background 0.2s, border-color 0.2s, color 0.2s;
     }
-    .footer-social a:hover { background: rgba(249,113,22,0.15); border-color: rgba(249,113,22,0.4); color: var(--orange); }
+    .footer-social a:hover { background: rgba(240,100,30,0.15); border-color: rgba(240,100,30,0.4); color: var(--orange); }
     .footer-social svg { width: 18px; height: 18px; fill: currentColor; }
 
     @media (max-width: 768px) {
@@ -180,7 +180,7 @@
       nav.open {
         display: flex; flex-direction: column; position: fixed; top: 108px; left: 0; right: 0;
         background: rgba(33,38,41,0.98); padding: 24px 20px;
-        border-bottom: 1px solid rgba(249,113,22,0.18); z-index: 99; align-items: flex-start; gap: 20px;
+        border-bottom: 1px solid rgba(240,100,30,0.18); z-index: 99; align-items: flex-start; gap: 20px;
       }
       nav.open a { font-size: 17px; }
       .hamburger { display: flex; }
@@ -215,7 +215,7 @@
   <p>Photos and videos of projects we've completed across Greenwich and South East London.</p>
   <div class="gallery-nav">
     <a href="#completed" class="primary">✅ Completed Projects</a>
-    <a href="#other" class="secondary">📁 Other</a>
+    <a href="#other" class="secondary">📁 From the Job Site</a>
   </div>
 </section>
 
@@ -251,7 +251,7 @@
 <!-- ── OTHER ── -->
 <div class="gallery-section" id="other">
   <div class="gallery-section-header">
-    <h2><em>Other</em></h2>
+    <h2><em>From the Job Site</em></h2>
     <p>More work from the team</p>
   </div>
   <div class="gallery-grid">
